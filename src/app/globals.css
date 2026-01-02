@@ -1,0 +1,211 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::-webkit-scrollbar {
+  display: none;
+}
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262.1 83.3% 57.8%;
+    --radius: 0rem;
+  }
+
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 263.4 70% 50.4%;
+  }
+}
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+        html {
+          scroll-behavior: auto;
+        }
+    
+        html.lenis {
+          height: auto;
+        }
+    
+        .lenis.lenis-smooth {
+          scroll-behavior: auto !important;
+        }
+    
+        .lenis.lenis-smooth [data-lenis-prevent] {
+          overscroll-behavior: contain;
+        }
+    
+        .lenis.lenis-stopped {
+          overflow: hidden;
+        }
+    
+        .lenis.lenis-scrolling iframe {
+          pointer-events: none;
+        }
+}
+
+/* FOR STICKY HEADER START */
+.scroll-down header {
+  transform: translate3d(0, -100%, 0);
+}
+
+.scroll-up header {
+  filter: drop-shadow(0 -10px 20px rgb(170, 170, 170));
+}
+
+/* SLIDER SECTION START */
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .swiper-button-next,
+  .swiper-button-prev {
+    background-color: #fff;
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    background-position: center;
+    z-index: 9999;
+  }
+
+  .swiper-button-next {
+    background-image: url('/images/icons/right-arrow.svg');
+  }
+
+  .swiper-button-prev {
+    background-image: url('/images/icons/left-arrow.svg');
+  }
+}
+/* SLIDER SECTION END */
+
+/* PRODUCT DESCRIPTION */
+/* PRODUCT DESCRIPTION */
+
+#product_description h1 {
+  font-weight: bold;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+#product_description p {
+  margin-top: 1rem;
+}
+
+#product_description div {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+#product_description div img {
+  width: 100%;
+  height: auto;
+  margin-top: 1rem;
+}
+
+#product_description div span {
+  font-weight: bold;
+}
+
+#product_description div span::after {
+  content: ':';
+}
+
+#product_description div p {
+  display: inline;
+}
+
+#product_description p span {
+  font-weight: bold;
+}
+
+#product_description div h2 {
+  font-weight: bold;
+}
+
+#product_description div ul {
+  margin-top: 0.5rem;
+}
+
+#product_description div ul li {
+  list-style-type: disc;
+  margin-left: 1rem;
+}
+
+.whatsapp_float {
+  position: fixed;
+  width: 70px;
+  height: 70px;
+  bottom: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  left: 40px;
+  background-color: #25d366;
+  color: #fff;
+  border-radius: 50px;
+  text-align: center;
+  font-size: 30px;
+  box-shadow: 2px 2px 3px #999;
+  z-index: 1000;
+}
+
+.whatsapp-icon {
+  margin-top: 0px;
+  font-size: 2.5rem;
+}
+
+/* for mobile */
+@media screen and (max-width: 767px) {
+  .whatsapp-icon {
+    font-size: 1.2rem;
+  }
+
+  .whatsapp_float {
+    width: 40px;
+    height: 40px;
+    bottom: 20px;
+    left: 10px;
+    font-size: 22px;
+  }
+}
