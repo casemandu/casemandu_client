@@ -1,8 +1,8 @@
 'use client'
-import { trackMyOrder } from '@/frontend/lib/orderAction'
+import { trackMyOrder } from '@/frontend/lib/orderActionClient'
+import toast from 'react-hot-toast'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import toast from 'react-hot-toast'
 import { BsCart2, BsPhone } from 'react-icons/bs'
 import { GrDeliver } from 'react-icons/gr'
 import { ImSpinner2 } from 'react-icons/im'
@@ -28,8 +28,8 @@ const OrderTractPage = () => {
     try {
       const data = await trackMyOrder(formData.orderId, formData.phoneNumber)
 
-      if (data.message) {
-        throw new Error(data.message)
+      if (data.error || data.message) {
+        throw new Error(data.message || 'Failed to track order')
       }
 
       if (data._id) {

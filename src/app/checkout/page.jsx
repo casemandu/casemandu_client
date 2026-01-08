@@ -1,3 +1,4 @@
+'use client'
 import React from 'react'
 import {
   Breadcrumb,
@@ -9,9 +10,6 @@ import {
 import Link from 'next/link'
 import OrderDetails from '@/components/pages/checkout/OrderDetails'
 
-export const metadata = {
-  title: 'Checkout',
-}
 const CheckoutPage = () => {
   return (
     <section className='py-8 sm:py-10 flex-grow'>

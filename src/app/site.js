@@ -13,6 +13,7 @@ export default async function sitemap() {
       url: `${process.env.NEXT_PUBLIC_APP_URL}/`,
       lastModified: new Date(),
       changeFrequency: 'daily',
+      priority: 1.0,
     },
     {
       url: `${process.env.NEXT_PUBLIC_APP_URL}/shop`,

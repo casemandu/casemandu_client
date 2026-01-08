@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import toast from 'react-hot-toast'
 
 const getOrderById = async (id) => {
   try {
@@ -98,25 +97,7 @@ const getOrderById = async (id) => {
   }
 }
 
-const trackMyOrder = async (orderId, phoneNumber) => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/orders/track?id=${orderId}&ph=${phoneNumber}`,
-      {
-        method: 'GET',
-        cache: 'no-store',
-      }
-    )
+// trackMyOrder has been moved to orderActionClient.js for client components
+// This file only exports server-side functions
 
-    return response.json()
-  } catch (error) {
-    toast.dismiss()
-    return toast.error(
-      error.response && error.response.data.message
-        ? error.response.data.message
-        : error.response
-    )
-  }
-}
-
-export { getOrderById, trackMyOrder }
+export { getOrderById }

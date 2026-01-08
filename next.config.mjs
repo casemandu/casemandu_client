@@ -1,3 +1,9 @@
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   logging: {
@@ -6,7 +12,16 @@ const nextConfig = {
       fullUrl: true,
     },
   },
+  webpack: (config) => {
+    // Ensure proper module resolution
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, './src'),
+    }
+    return config
+  },
   images: {
+    loaderFile: './src/lib/cloudinaryLoader.js',
     remotePatterns: [
       {
         protocol: 'https',
@@ -69,7 +84,6 @@ const nextConfig = {
     minimumCacheTTL: 31536000, // 1 year cache for optimized images
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // Disable optimization for external images to improve performance
     unoptimized: false,
   },
 }
