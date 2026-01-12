@@ -21,6 +21,12 @@ const ProductDetails = ({ product, phones }) => {
   const [selectedBrand, setSelectedBrand] = useState('')
   const [selectedModel, setSelectedModel] = useState('')
 
+  // Search inputs and debounced values for brand/model dropdowns
+  const [brandSearchInput, setBrandSearchInput] = useState('')
+  const [brandSearch, setBrandSearch] = useState('')
+  const [modelSearchInput, setModelSearchInput] = useState('')
+  const [modelSearch, setModelSearch] = useState('')
+
   const [allVariants, setAllVariants] = useState([])
   const [extraValue, setExtraValue] = useState('')
   // Initial price should be from product.price (string, could be range or single value)
@@ -52,6 +58,23 @@ const ProductDetails = ({ product, phones }) => {
     variant: '',
     description: '',
   })
+
+  // Debounce brand search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setBrandSearch(brandSearchInput)
+    }, 300)
+    return () => clearTimeout(handler)
+  }, [brandSearchInput])
+
+  // Debounce model search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setModelSearch(modelSearchInput)
+    }, 300)
+    return () => clearTimeout(handler)
+  }, [modelSearchInput])
+
   return (
     <div className='lg:col-gap-12 xl:col-gap-16 mt-8 grid grid-cols-1 gap-12 lg:mt-12 lg:grid-cols-5 lg:gap-16'>
       <div className='lg:col-span-3 lg:row-end-1'>
@@ -144,14 +167,41 @@ const ProductDetails = ({ product, phones }) => {
               onValueChange={(selectedOption) => {
                 setSelectedBrand(selectedOption)
                 setSelectedModel('')
+                setBrandSearchInput('')
+                setBrandSearch('')
+                setModelSearchInput('')
+                setModelSearch('')
               }}
             >
               <SelectTrigger className='mt-3'>
                 <SelectValue placeholder='Select Brand...' />
               </SelectTrigger>
               <SelectContent>
+                {Array.isArray(phones) && phones.length > 7 && (
+                  <div className='p-2 pb-1'>
+                    <input
+                      type='text'
+                      value={brandSearchInput}
+                      onChange={(e) => setBrandSearchInput(e.target.value)}
+                      placeholder='Search brand...'
+                      className='w-full rounded-md border border-gray-200 px-2 py-1 text-xs outline-none focus:border-black focus:ring-1 focus:ring-black'
+                      onKeyDown={(e) => e.stopPropagation()}
+                      onKeyUp={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                )}
                 <SelectGroup>
-                  {phones?.map((brand) => (
+                  {phones
+                    ?.filter((brand) =>
+                      !brandSearch
+                        ? true
+                        : brand?.name
+                            ?.toLowerCase()
+                            .includes(brandSearch.toLowerCase())
+                    )
+                    .map((brand) => (
                     <SelectItem key={brand._id} value={brand.name}>
                       {brand.name}
                     </SelectItem>
@@ -168,18 +218,50 @@ const ProductDetails = ({ product, phones }) => {
                 setSelectedModel(selectedOption)
               }}
             >
-              <SelectTrigger className='mt-3'>
-                <SelectValue placeholder='Select Brand...' />
+              <SelectTrigger className='mt-3' disabled={!selectedBrand}>
+                <SelectValue placeholder='Select Model...' />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {phones
-                    ?.find((phone) => phone.name === selectedBrand)
-                    ?.models?.map((model) => (
-                      <SelectItem key={model._id} value={model.name}>
-                        {model.name}
-                      </SelectItem>
-                    ))}
+                  {(() => {
+                    const selectedPhone = phones?.find(
+                      (phone) => phone.name === selectedBrand
+                    )
+                    const models = selectedPhone?.models || []
+                    const shouldShowSearch = models.length > 7
+                    const filteredModels = models.filter((model) =>
+                      !modelSearch
+                        ? true
+                        : model?.name
+                            ?.toLowerCase()
+                            .includes(modelSearch.toLowerCase())
+                    )
+
+                    return (
+                      <>
+                        {shouldShowSearch && (
+                          <div className='p-2 pb-1'>
+                            <input
+                              type='text'
+                              value={modelSearchInput}
+                              onChange={(e) => setModelSearchInput(e.target.value)}
+                              placeholder='Search model...'
+                              className='w-full rounded-md border border-gray-200 px-2 py-1 text-xs outline-none focus:border-black focus:ring-1 focus:ring-black'
+                              onKeyDown={(e) => e.stopPropagation()}
+                              onKeyUp={(e) => e.stopPropagation()}
+                              onClick={(e) => e.stopPropagation()}
+                              onPointerDown={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        )}
+                        {filteredModels.map((model) => (
+                          <SelectItem key={model._id} value={model.name}>
+                            {model.name}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )
+                  })()}
                 </SelectGroup>
               </SelectContent>
             </Select>
