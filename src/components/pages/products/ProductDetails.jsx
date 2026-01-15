@@ -494,7 +494,7 @@ const ProductDetails = ({ product, phones }) => {
               <Button
                 type='button'
                 onClick={handleBuyNow}
-                className='flex-1 h-14 rounded-xl text-base font-semibold bg-primary hover:bg-primary/90 transition-all shadow-lg shadow-primary/25'
+                className='flex-1 h-14 rounded-xl text-base font-semibold bg-primary hover:bg-primary/90 transition-all'
               >
                 Buy Now
               </Button>
