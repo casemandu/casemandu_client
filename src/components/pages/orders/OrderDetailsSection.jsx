@@ -1,7 +1,5 @@
 import moment from 'moment'
-import Image from 'next/image'
 import Link from 'next/link'
-import { GrDeliver } from 'react-icons/gr'
 
 const OrderDetailsSection = ({ order }) => {
   return (
@@ -58,31 +56,40 @@ const OrderDetailsSection = ({ order }) => {
 
           <h2 className='text-2xl font-medium mt-5 border-t'>Order Items</h2>
           <div className='grid grid-cols-1 gap-4 mt-4'>
-            {order?.orderItems?.map((item) => (
-              <div
-                key={item?._id}
-                className='flex items-center justify-between border-b border-gray-200 pb-4'
-              >
-                <div className='flex items-center gap-4'>
-                  <img
-                    src={item?.image}
-                    alt={item?.name}
-                    className='w-20 h-20 object-cover rounded-lg'
-                  />
-                  <div>
-                    <h3 className='text-lg font-medium'>{item?.name}</h3>
-                    <p className='text-medium text-gray-500'>{item?.variant}</p>
-                    <p className='text-medium text-gray-500'>
-                      Rs {Number(item?.price).toLocaleString('en')} x{' '}
-                      {item?.qty}
-                    </p>
+            {order?.orderItems?.map((item) => {
+              // Use customImage for custom orders, fallback to image, then product image
+              const itemImage = item?.customImage || item?.image || item?.product?.images?.[0] || '/images/placeholder.png';
+              return (
+                <div
+                  key={item?._id}
+                  className='flex items-center justify-between border-b border-gray-200 pb-4'
+                >
+                  <div className='flex items-center gap-4'>
+                    <a href={itemImage} target='_blank' rel='noopener noreferrer'>
+                      <img
+                        src={itemImage}
+                        alt={item?.name}
+                        className='w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity'
+                      />
+                    </a>
+                    <div>
+                      <h3 className='text-lg font-medium'>{item?.name}</h3>
+                      <p className='text-medium text-gray-500'>{item?.variant}</p>
+                      {item?.isCustom && (
+                        <p className='text-xs text-purple-600 font-medium'>Custom Design</p>
+                      )}
+                      <p className='text-medium text-gray-500'>
+                        Rs {Number(item?.price).toLocaleString('en')} x{' '}
+                        {item?.qty}
+                      </p>
+                    </div>
                   </div>
+                  <p className='text-medium text-black'>
+                    Rs {Number(item?.price * item?.qty).toLocaleString('en')}
+                  </p>
                 </div>
-                <p className='text-medium text-black'>
-                  Rs {Number(item?.price * item?.qty).toLocaleString('en')}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
