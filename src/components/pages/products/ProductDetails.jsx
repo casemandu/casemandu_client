@@ -1,12 +1,13 @@
 'use client'
-import { addToCart } from '@/store/features/cart/cartSlice'
+import { addToCart, setCartOpen } from '@/store/features/cart/cartSlice'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { BiMinus, BiPlus } from 'react-icons/bi'
-import { BsHandbag, BsPhone } from 'react-icons/bs'
+import { BsPhone } from 'react-icons/bs'
+import { Search, ShoppingBag, Zap, Check, ChevronDown, Truck, Shield, RotateCcw } from 'lucide-react'
 import { useDispatch } from 'react-redux'
-// import Select from 'react-select'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -17,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Image from 'next/image'
+
 const ProductDetails = ({ product, phones }) => {
   const [selectedBrand, setSelectedBrand] = useState('')
   const [selectedModel, setSelectedModel] = useState('')
@@ -29,12 +31,77 @@ const ProductDetails = ({ product, phones }) => {
 
   const [allVariants, setAllVariants] = useState([])
   const [extraValue, setExtraValue] = useState('')
-  // Initial price should be from product.price (string, could be range or single value)
   const [productPrice, setProductPrice] = useState(product?.price || '')
-  const [variantPrice, setVariantPrice] = useState(null) // Store variant price separately
+  const [variantPrice, setVariantPrice] = useState(null)
 
   const dispatch = useDispatch()
+  const router = useRouter()
 
+  const [productOptions, setProductOptions] = useState({
+    quantity: 1,
+    variant: '',
+    description: '',
+  })
+
+  // Helper function to validate and get cart item data
+  const getCartItemData = () => {
+    if (product?.category?.isCase) {
+      if (!selectedBrand || !selectedModel) {
+        toast.dismiss()
+        toast.error('Please select the phone brand and model')
+        return null
+      }
+
+      if (!productOptions?.variant?.name) {
+        toast.dismiss()
+        toast.error('Please select a variant')
+        return null
+      }
+    }
+
+    if (product?.category?.extraField && !extraValue) {
+      toast.dismiss()
+      toast.error(`Please enter the ${product?.category?.extraField}`)
+      return null
+    }
+
+    let v = ''
+    if (product?.category?.isCase) {
+      v = productOptions?.variant?.name
+      if (product?.category?.extraField) {
+        v = `${v} - ${extraValue}`
+      } else if (selectedBrand && selectedModel) {
+        v = `${v} - ${selectedBrand}, ${selectedModel}`
+      }
+    } else if (product?.category?.extraField) {
+      v = extraValue
+    }
+
+    return {
+      product: {
+        _id: product?._id,
+        name: product?.title,
+        image: product?.image,
+      },
+      quantity: productOptions?.quantity,
+      price: variantPrice !== null ? productPrice : product?.price,
+      variant: v,
+    }
+  }
+
+  const handleAddToCart = () => {
+    const cartItem = getCartItemData()
+    if (!cartItem) return
+    dispatch(addToCart(cartItem))
+    dispatch(setCartOpen(true))
+  }
+
+  const handleBuyNow = () => {
+    const cartItem = getCartItemData()
+    if (!cartItem) return
+    dispatch(addToCart(cartItem))
+    router.push('/checkout')
+  }
 
   useEffect(() => {
     if (product?.category?.isCase) {
@@ -45,19 +112,12 @@ const ProductDetails = ({ product, phones }) => {
           []
       )
     }
-  }, [product, selectedBrand, selectedModel])
+  }, [product, selectedBrand, selectedModel, phones])
 
-  // Reset variant price when product changes
   useEffect(() => {
     setVariantPrice(null)
     setProductPrice(product?.price || '')
   }, [product])
-
-  const [productOptions, setProductOptions] = useState({
-    quantity: 1,
-    variant: '',
-    description: '',
-  })
 
   // Debounce brand search
   useEffect(() => {
@@ -76,385 +136,387 @@ const ProductDetails = ({ product, phones }) => {
   }, [modelSearchInput])
 
   return (
-    <div className='lg:col-gap-12 xl:col-gap-16 mt-8 grid grid-cols-1 gap-12 lg:mt-12 lg:grid-cols-5 lg:gap-16'>
-      <div className='lg:col-span-3 lg:row-end-1'>
-        <div className='lg:flex lg:items-start'>
-          <div className='lg:order-2 lg:ml-5'>
-            <div className='max-w-xl overflow-hidden rounded-lg'>
-              <Image
-                className='object-cover'
-                src={product?.image}
-                alt={product?.name}
-                height={500}
-                width={500}
-              />
-            </div>
+    <div className='mt-6 lg:mt-10'>
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16'>
+        {/* Left Column - Product Image */}
+        <div className='lg:sticky lg:top-24 lg:self-start'>
+          <div className='relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100'>
+            <Image
+              className='object-contain p-4'
+              src={product?.image}
+              alt={product?.name || 'Product Image'}
+              fill
+              priority
+              sizes='(max-width: 768px) 100vw, 50vw'
+            />
+            {/* Discount Badge */}
+            {product?.discount > 0 && (
+              <div className='absolute top-4 left-4 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg'>
+                -{product.discount}% OFF
+              </div>
+            )}
           </div>
         </div>
-      </div>
 
-      <div className='lg:col-span-2 lg:row-span-2 lg:row-end-2'>
-        <h1 className='sm: text-2xl font-bold text-gray-900 sm:text-3xl'>
-          {product?.title}
-        </h1>
-        <div className='flex gap-4 mt-5 items-center border-t border-b py-4'>
-          {variantPrice !== null ? (
-            // Show variant price (with or without discount)
-            product?.discount && product.discount > 0 ? (
-              <div className='flex flex-col gap-1'>
-                <p className='font-bold text-gray-400 text-lg line-through'>
+        {/* Right Column - Product Details */}
+        <div className='space-y-6'>
+          {/* Category Badge */}
+          {product?.category?.title && (
+            <span className='inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full'>
+              {product.category.title}
+            </span>
+          )}
+
+          {/* Title */}
+          <h1 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight'>
+            {product?.title}
+          </h1>
+
+          {/* Price Section */}
+          <div className='flex items-baseline gap-3 flex-wrap'>
+            {variantPrice !== null ? (
+              product?.discount && product.discount > 0 ? (
+                <>
+                  <span className='text-3xl font-bold text-gray-900'>
+                    Rs {Number(productPrice).toLocaleString('en')}
+                  </span>
+                  <span className='text-xl text-gray-400 line-through'>
+                    Rs {Number(variantPrice).toLocaleString('en')}
+                  </span>
+                  <span className='px-2 py-1 bg-green-100 text-green-700 text-sm font-semibold rounded-md'>
+                    Save Rs {Number(variantPrice - productPrice).toLocaleString('en')}
+                  </span>
+                </>
+              ) : (
+                <span className='text-3xl font-bold text-gray-900'>
                   Rs {Number(variantPrice).toLocaleString('en')}
-                </p>
-                <p className='font-bold text-gray-900 text-2xl'>
-                  Rs {Number(productPrice).toLocaleString('en')}
-                </p>
-                <span className='text-sm text-primary font-medium'>
-                  {Number(product?.discount || 0).toFixed(0)}% OFF
                 </span>
-              </div>
+              )
             ) : (
-              <p className='font-bold text-gray-900 text-2xl'>
-                Rs {Number(variantPrice).toLocaleString('en')}
-              </p>
-            )
-          ) : (
-            // Show initial product price (string, could be range or single value)
-            <p className='font-bold text-gray-900 text-2xl'>
-              Rs. {productPrice}
+              <span className='text-3xl font-bold text-gray-900'>
+                Rs. {productPrice}
+              </span>
+            )}
+          </div>
+
+          {/* Short Description */}
+          {product?.description && (
+            <p className='text-gray-600 leading-relaxed'>
+              {product.description.length > 200 
+                ? product.description.substring(0, 200) + '...' 
+                : product.description}
             </p>
           )}
-        </div>
 
-        {product?.features && Array.isArray(product.features) && product.features.length > 0 && (
-          <div className='mt-6'>
-            <h2 className='text-lg font-semibold text-gray-900 mb-3'>Features</h2>
-            <ul className='space-y-2'>
-              {product.features.map((feature, index) => (
-                <li key={index} className='flex items-start gap-3'>
-                  <svg
-                    className='w-5 h-5 text-green-500 mt-0.5 flex-shrink-0'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M5 13l4 4L19 7'
-                    />
-                  </svg>
-                  <span className='text-sm text-gray-700'>{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+          {/* Features */}
+          {product?.features?.length > 0 && (
+            <div className='bg-gray-50 rounded-xl p-4'>
+              <h3 className='text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2'>
+                <Check className='h-4 w-4 text-green-500' />
+                Key Features
+              </h3>
+              <ul className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+                {product.features.slice(0, 6).map((feature, index) => (
+                  <li key={index} className='flex items-start gap-2 text-sm text-gray-600'>
+                    <Check className='h-4 w-4 text-green-500 flex-shrink-0 mt-0.5' />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-        <pre
-          style={{ fontFamily: 'inherit' }}
-          className='mt-5 text-sm break-words whitespace-pre-wrap'
-        >
-          {product?.description}
-        </pre>
-
-        {!product?.productType?.extraField && product?.category?.isCase && (
-          <div className='mt-5'>
-            <h2 className='mt-5 text-base text-gray-900'>
-              Select Brand <span className='ms-1 text-red-500'>*</span>
-            </h2>
-            <Select
-              onValueChange={(selectedOption) => {
-                setSelectedBrand(selectedOption)
-                setSelectedModel('')
-                setBrandSearchInput('')
-                setBrandSearch('')
-                setModelSearchInput('')
-                setModelSearch('')
-              }}
-            >
-              <SelectTrigger className='mt-3'>
-                <SelectValue placeholder='Select Brand...' />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.isArray(phones) && phones.length > 7 && (
-                  <div className='p-2 pb-1'>
-                    <input
-                      type='text'
-                      value={brandSearchInput}
-                      onChange={(e) => setBrandSearchInput(e.target.value)}
-                      placeholder='Search brand...'
-                      className='w-full rounded-md border border-gray-200 px-2 py-1 text-xs outline-none focus:border-black focus:ring-1 focus:ring-black'
-                      onKeyDown={(e) => e.stopPropagation()}
-                      onKeyUp={(e) => e.stopPropagation()}
-                      onClick={(e) => e.stopPropagation()}
-                      onPointerDown={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                )}
-                <SelectGroup>
-                  {phones
-                    ?.filter((brand) =>
-                      !brandSearch
-                        ? true
-                        : brand?.name
-                            ?.toLowerCase()
-                            .includes(brandSearch.toLowerCase())
-                    )
-                    .map((brand) => (
-                    <SelectItem key={brand._id} value={brand.name}>
-                      {brand.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            <h2 className='mt-5 text-base text-gray-900'>
-              Select Model <span className='ms-1 text-red-500'>*</span>
-            </h2>
-            <Select
-              onValueChange={(selectedOption) => {
-                setSelectedModel(selectedOption)
-              }}
-            >
-              <SelectTrigger className='mt-3' disabled={!selectedBrand}>
-                <SelectValue placeholder='Select Model...' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {(() => {
-                    const selectedPhone = phones?.find(
-                      (phone) => phone.name === selectedBrand
-                    )
-                    const models = selectedPhone?.models || []
-                    const shouldShowSearch = models.length > 7
-                    const filteredModels = models.filter((model) =>
-                      !modelSearch
-                        ? true
-                        : model?.name
-                            ?.toLowerCase()
-                            .includes(modelSearch.toLowerCase())
-                    )
-
-                    return (
-                      <>
-                        {shouldShowSearch && (
-                          <div className='p-2 pb-1'>
-                            <input
-                              type='text'
-                              value={modelSearchInput}
-                              onChange={(e) => setModelSearchInput(e.target.value)}
-                              placeholder='Search model...'
-                              className='w-full rounded-md border border-gray-200 px-2 py-1 text-xs outline-none focus:border-black focus:ring-1 focus:ring-black'
-                              onKeyDown={(e) => e.stopPropagation()}
-                              onKeyUp={(e) => e.stopPropagation()}
-                              onClick={(e) => e.stopPropagation()}
-                              onPointerDown={(e) => e.stopPropagation()}
-                            />
-                          </div>
-                        )}
-                        {filteredModels.map((model) => (
-                          <SelectItem key={model._id} value={model.name}>
-                            {model.name}
+          {/* Brand & Model Selection */}
+          {!product?.productType?.extraField && product?.category?.isCase && (
+            <div className='space-y-4 p-5 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl border border-gray-200'>
+              <h3 className='text-sm font-semibold text-gray-900 flex items-center gap-2'>
+                Select Your Device
+              </h3>
+              
+              {/* Brand Select */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Brand <span className='text-red-500'>*</span>
+                </label>
+                <Select
+                  onValueChange={(selectedOption) => {
+                    setSelectedBrand(selectedOption)
+                    setSelectedModel('')
+                    setBrandSearchInput('')
+                    setBrandSearch('')
+                    setModelSearchInput('')
+                    setModelSearch('')
+                  }}
+                >
+                  <SelectTrigger className='w-full h-12 bg-white border-gray-200 rounded-xl hover:border-gray-300 transition-colors'>
+                    <SelectValue placeholder='Choose your phone brand...' />
+                  </SelectTrigger>
+                  <SelectContent className='rounded-xl'>
+                    {Array.isArray(phones) && phones.length > 7 && (
+                      <div className='sticky top-0 p-3 bg-white border-b border-gray-100'>
+                        <div className='relative'>
+                          <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
+                          <input
+                            type='text'
+                            value={brandSearchInput}
+                            onChange={(e) => setBrandSearchInput(e.target.value)}
+                            placeholder='Search brand...'
+                            className='w-full rounded-lg border border-gray-200 pl-10 pr-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400 transition-all'
+                            onKeyDown={(e) => e.stopPropagation()}
+                            onKeyUp={(e) => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <SelectGroup>
+                      {phones
+                        ?.filter((brand) =>
+                          !brandSearch
+                            ? true
+                            : brand?.name?.toLowerCase().includes(brandSearch.toLowerCase())
+                        )
+                        .map((brand) => (
+                          <SelectItem key={brand._id} value={brand.name} className='py-3'>
+                            {brand.name}
                           </SelectItem>
                         ))}
-                      </>
-                    )
-                  })()}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
 
-        {allVariants?.length !== 0 && (
-          <>
-            <h2 className='mt-8 text-base text-gray-900'>
-              Choose Variant
-              <span className='ms-1 text-red-500'>*</span>
-            </h2>
-            <div className='mt-3 flex select-none flex-wrap items-center gap-1'>
-              {allVariants?.map((variant, index) => {
-                return (
-                  <label key={variant._id}>
-                    <input
-                      type='radio'
-                      name='variant'
-                      value={variant?.name}
-                      onChange={() => {
-                        setProductOptions({
-                          ...productOptions,
-                          variant: variant,
-                        })
-                        // Use ONLY variant price (not product.price + variant.price)
-                        const variantPriceValue = Number(variant?.price || product?.category?.price || 0)
-                        setVariantPrice(variantPriceValue)
-                        
-                        // Apply discount to variant price only
-                        if (product?.discount && product.discount > 0) {
-                          const discountAmount = (variantPriceValue * product.discount) / 100
-                          setProductPrice(variantPriceValue - discountAmount)
-                        } else {
-                          setProductPrice(variantPriceValue)
-                        }
-                      }}
-                      checked={productOptions?.variant?.name === variant?.name}
-                      className='peer sr-only'
-                    />
-                    <p className='peer-checked:bg-black peer-checked:text-white rounded-lg border border-black px-6 py-2 font-bold'>
-                      {variant?.name}
-                    </p>
-                    <span className='mt-1 block text-center text-xs'>
-                      Rs {(() => {
-                        // Show only variant price in the variant selector
-                        const variantPriceValue = Number(variant?.price || product?.category?.price || 0)
-                        return variantPriceValue.toLocaleString('en')
+              {/* Model Select */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Model <span className='text-red-500'>*</span>
+                </label>
+                <Select
+                  onValueChange={(selectedOption) => {
+                    setSelectedModel(selectedOption)
+                  }}
+                  disabled={!selectedBrand}
+                >
+                  <SelectTrigger className={`w-full h-12 bg-white border-gray-200 rounded-xl transition-colors ${!selectedBrand ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-300'}`}>
+                    <SelectValue placeholder={selectedBrand ? 'Choose your phone model...' : 'Select a brand first'} />
+                  </SelectTrigger>
+                  <SelectContent className='rounded-xl'>
+                    <SelectGroup>
+                      {(() => {
+                        const selectedPhone = phones?.find((phone) => phone.name === selectedBrand)
+                        const models = selectedPhone?.models || []
+                        const shouldShowSearch = models.length > 7
+                        const filteredModels = models.filter((model) =>
+                          !modelSearch
+                            ? true
+                            : model?.name?.toLowerCase().includes(modelSearch.toLowerCase())
+                        )
+
+                        return (
+                          <>
+                            {shouldShowSearch && (
+                              <div className='sticky top-0 p-3 bg-white border-b border-gray-100'>
+                                <div className='relative'>
+                                  <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
+                                  <input
+                                    type='text'
+                                    value={modelSearchInput}
+                                    onChange={(e) => setModelSearchInput(e.target.value)}
+                                    placeholder='Search model...'
+                                    className='w-full rounded-lg border border-gray-200 pl-10 pr-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400 transition-all'
+                                    onKeyDown={(e) => e.stopPropagation()}
+                                    onKeyUp={(e) => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onPointerDown={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            {filteredModels.map((model) => (
+                              <SelectItem key={model._id} value={model.name} className='py-3'>
+                                {model.name}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )
                       })()}
-                    </span>
-                  </label>
-                )
-              })}
-            </div>
-          </>
-        )}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
 
-        {product?.category?.extraField && (
-          <div className='mt-5'>
-            <h2 className='text-base text-gray-900'>
-              {product?.category?.extraField}
-              <span className='ms-1 text-red-500'>*</span>
-            </h2>
-            <div className='relative mt-3'>
-              <input
-                type='text'
-                id='productModel'
-                value={extraValue}
-                onChange={(e) => {
-                  setExtraValue(e.target.value)
-                  setProductOptions({
-                    ...productOptions,
-                    variant: extraValue,
-                  })
-                }}
-                name='productModel'
-                className='w-full rounded-md border border-gray-200 px-4 py-3 pl-11 text-sm shadow-sm outline-none focus:z-10 focus:border-black focus:ring-black'
-                placeholder={product?.category?.placeholder}
-                onInput={(e) => {
-                  e.target.value = e.target.value.toUpperCase()
-                }}
-              />
-              <div className='pointer-events-none absolute inset-y-0 left-0 inline-flex items-center px-3'>
-                <BsPhone className='h-4 w-4 text-gray-400' />
+              {/* Selected Device Summary */}
+              {selectedBrand && selectedModel && (
+                <div className='flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg'>
+                  <Check className='h-4 w-4 text-green-600 flex-shrink-0' />
+                  <span className='text-sm text-green-700'>
+                    Selected: <span className='font-semibold'>{selectedBrand} {selectedModel}</span>
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Variant Selection */}
+          {allVariants?.length > 0 && (
+            <div className='space-y-3'>
+              <h3 className='text-sm font-semibold text-gray-900'>
+                Choose Variant <span className='text-red-500'>*</span>
+              </h3>
+              <div className='grid grid-cols-2 sm:grid-cols-3 gap-3'>
+                {allVariants?.map((variant) => {
+                  const isSelected = productOptions?.variant?.name === variant?.name
+                  const variantPriceValue = Number(variant?.price || product?.category?.price || 0)
+                  
+                  return (
+                    <label
+                      key={variant._id}
+                      className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <input
+                        type='radio'
+                        name='variant'
+                        value={variant?.name}
+                        onChange={() => {
+                          setProductOptions({
+                            ...productOptions,
+                            variant: variant,
+                          })
+                          setVariantPrice(variantPriceValue)
+                          if (product?.discount && product.discount > 0) {
+                            const discountAmount = (variantPriceValue * product.discount) / 100
+                            setProductPrice(variantPriceValue - discountAmount)
+                          } else {
+                            setProductPrice(variantPriceValue)
+                          }
+                        }}
+                        checked={isSelected}
+                        className='sr-only'
+                      />
+                      {isSelected && (
+                        <div className='absolute top-2 right-2'>
+                          <Check className='h-4 w-4 text-primary' />
+                        </div>
+                      )}
+                      <p className='font-semibold text-gray-900 text-sm'>{variant?.name}</p>
+                      <p className='text-sm text-gray-500 mt-1'>
+                        Rs {variantPriceValue.toLocaleString('en')}
+                      </p>
+                    </label>
+                  )
+                })}
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className='mt-10 flex flex-col items-center justify-between space-y-4 border-t border-b py-4 sm:flex-row sm:space-y-0'>
-          <div className='flex'>
-            <Button
-              onClick={() =>
-                // check if the quantity is greater than 1 before decrementing
-                productOptions.quantity > 1 &&
-                setProductOptions({
-                  ...productOptions,
-                  quantity: productOptions.quantity - 1,
-                })
-              }
-              variant='outline'
-            >
-              <BiMinus />
-            </Button>
-
-            <div className='border w-16 outline-none flex items-center justify-center'>
-              {productOptions.quantity}
+          {/* Extra Field Input */}
+          {product?.category?.extraField && (
+            <div className='space-y-2'>
+              <label className='block text-sm font-semibold text-gray-900'>
+                {product?.category?.extraField}
+                <span className='text-red-500 ml-1'>*</span>
+              </label>
+              <div className='relative'>
+                <BsPhone className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400' />
+                <input
+                  type='text'
+                  id='productModel'
+                  value={extraValue}
+                  onChange={(e) => {
+                    setExtraValue(e.target.value)
+                    setProductOptions({
+                      ...productOptions,
+                      variant: extraValue,
+                    })
+                  }}
+                  name='productModel'
+                  className='w-full h-12 rounded-xl border border-gray-200 px-4 pl-12 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all'
+                  placeholder={product?.category?.placeholder || 'Enter value...'}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.toUpperCase()
+                  }}
+                />
+              </div>
             </div>
-            <Button
-              variant='outline'
-              onClick={() =>
-                setProductOptions({
-                  ...productOptions,
-                  quantity: productOptions.quantity + 1,
-                })
-              }
-            >
-              <BiPlus />
-            </Button>
+          )}
+
+          {/* Quantity & Actions */}
+          <div className='space-y-4 pt-4 border-t border-gray-200'>
+            {/* Quantity Selector */}
+            <div className='flex items-center gap-4'>
+              <span className='text-sm font-semibold text-gray-900'>Quantity</span>
+              <div className='flex items-center border border-gray-200 rounded-xl overflow-hidden bg-white'>
+                <button
+                  onClick={() =>
+                    productOptions.quantity > 1 &&
+                    setProductOptions({
+                      ...productOptions,
+                      quantity: productOptions.quantity - 1,
+                    })
+                  }
+                  className='w-12 h-12 flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-600 disabled:opacity-50'
+                  disabled={productOptions.quantity <= 1}
+                >
+                  <BiMinus className='h-4 w-4' />
+                </button>
+                <span className='w-14 h-12 flex items-center justify-center font-semibold text-gray-900 border-x border-gray-200'>
+                  {productOptions.quantity}
+                </span>
+                <button
+                  onClick={() =>
+                    setProductOptions({
+                      ...productOptions,
+                      quantity: productOptions.quantity + 1,
+                    })
+                  }
+                  className='w-12 h-12 flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-600'
+                >
+                  <BiPlus className='h-4 w-4' />
+                </button>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className='flex flex-col sm:flex-row gap-3'>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={handleAddToCart}
+                className='flex-1 h-14 rounded-xl text-base font-semibold border-2 border-gray-900 hover:bg-gray-900 hover:text-white transition-all'
+              >
+                Add to Cart
+              </Button>
+              <Button
+                type='button'
+                onClick={handleBuyNow}
+                className='flex-1 h-14 rounded-xl text-base font-semibold bg-primary hover:bg-primary/90 transition-all shadow-lg shadow-primary/25'
+              >
+                Buy Now
+              </Button>
+            </div>
           </div>
-          {/* <Button className='w-full sm:w-auto'>Buy Now</Button> */}
-          <Button
-            type='button'
-            onClick={() => {
-              if (product?.category?.isCase) {
-                if (!selectedBrand || !selectedModel) {
-                  toast.dismiss()
-                  return toast.error('Please select the phone brand and model')
-                }
 
-                if (!productOptions?.variant?.name) {
-                  toast.dismiss()
-                  return toast.error('Please select a variant')
-                }
-              }
-
-              if (product?.category?.extraField && !extraValue) {
-                toast.dismiss()
-                return toast.error(
-                  `Please enter the ${product?.category?.extraField}`
-                )
-              }
-
-              let v = ''
-              if (product?.category?.isCase) {
-                v = productOptions?.variant?.name
-                if (product?.category?.extraField) {
-                  v = `${v} - ${extraValue}`
-                } else if (selectedBrand && selectedModel) {
-                  v = `${v} - ${selectedBrand}, ${selectedModel}`
-                }
-              } else if (product?.category?.extraField) {
-                v = extraValue
-              }
-
-              dispatch(
-                addToCart({
-                  product: {
-                    _id: product?._id,
-                    name: product?.title,
-                    image: product?.image,
-                  },
-                  quantity: productOptions?.quantity,
-                  price: variantPrice !== null ? productPrice : product?.price,
-                  variant: v,
-                })
-              )
-            }}
-          >
-            <BsHandbag className='h-5 w-5 mr-3 shrink-0' />
-            Add to Cart
-          </Button>
+          {/* Trust Badges */}
+        
         </div>
       </div>
 
-      <div className='lg:col-span-3'>
-        <div className='border-b border-gray-300'>
-          <nav className='flex gap-4'>
-            <button className='border-b-2 border-gray-900 py-4 text-sm font-medium text-gray-900 hover:border-gray-400 hover:text-gray-800'>
-              Description
-            </button>
-          </nav>
+      {/* Description Section */}
+      <div className='mt-16 lg:mt-24'>
+        <div className='border-b border-gray-200'>
+          <h2 className='inline-block text-lg font-semibold text-gray-900 border-b-2 border-gray-900 pb-4 -mb-[1px]'>
+            Product Description
+          </h2>
         </div>
 
-        <div className='mt-8 flow-root sm:mt-12' id='product_description'>
-          <h1>{product?.title}</h1>
-          <div>
-            <span>Product</span> {product?.category?.title || 'Uncategorized'}
-          </div>
-
-          {product?.category?.isCase ? (
+        <div className='mt-8 prose prose-gray max-w-none'>
+          {product?.category?.isCase && productOptions?.variant?.description ? (
             <div
-              // set the description of the selected case type
               dangerouslySetInnerHTML={{
                 __html: productOptions?.variant?.description,
               }}
@@ -466,10 +528,7 @@ const ProductDetails = ({ product, phones }) => {
               }}
             />
           ) : (
-            <pre
-              style={{ fontFamily: 'inherit' }}
-              className='break-words whitespace-pre-wrap'
-            >
+            <pre className='font-sans break-words whitespace-pre-wrap text-gray-600 leading-relaxed'>
               {product?.description}
             </pre>
           )}

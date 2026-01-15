@@ -1,10 +1,8 @@
 'use client'
-import { Button } from '@/components/ui/button'
 import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
@@ -12,20 +10,176 @@ import {
   addToCart,
   removeFromCart,
   subCartQuantity,
+  setCartOpen,
 } from '@/store/features/cart/cartSlice'
 import { LucideShoppingCart } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useRef } from 'react'
+import toast from 'react-hot-toast'
 import { BiMinus, BiPlus, BiTrash } from 'react-icons/bi'
 import { BsCart, BsHandbag } from 'react-icons/bs'
 import { useDispatch, useSelector } from 'react-redux'
 
 const CartContainer = () => {
   const dispatch = useDispatch()
-  const { cartItems } = useSelector((state) => state.cart)
+  const { cartItems, isCartOpen } = useSelector((state) => state.cart)
+  const scrollPositionRef = useRef(0)
+
+  // Lock body scroll when cart is open (matching SearchSidebar pattern)
+  useEffect(() => {
+    if (isCartOpen) {
+      // Store current scroll position
+      scrollPositionRef.current = window.scrollY || window.pageYOffset || document.documentElement.scrollTop
+      
+      // Calculate scrollbar width
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+
+      // Lock body and html scroll
+      const body = document.body
+      const html = document.documentElement
+      
+      // Store original values
+      const originalBodyOverflow = body.style.overflow
+      const originalBodyPosition = body.style.position
+      const originalBodyTop = body.style.top
+      const originalBodyLeft = body.style.left
+      const originalBodyRight = body.style.right
+      const originalBodyWidth = body.style.width
+      const originalBodyPaddingRight = body.style.paddingRight
+      const originalHtmlOverflow = html.style.overflow
+
+      // Lock scroll
+      body.style.overflow = 'hidden'
+      body.style.position = 'fixed'
+      body.style.top = `-${scrollPositionRef.current}px`
+      body.style.left = '0'
+      body.style.right = '0'
+      body.style.width = '100%'
+      html.style.overflow = 'hidden'
+      
+      if (scrollbarWidth > 0) {
+        body.style.paddingRight = `${scrollbarWidth}px`
+      }
+
+      // Stop Lenis smooth scroll
+      if (!html.classList.contains('lenis')) {
+        html.classList.add('lenis')
+      }
+      html.classList.add('lenis-stopped')
+      
+      // Prevent Lenis from scrolling
+      html.setAttribute('data-lenis-prevent', 'true')
+      body.setAttribute('data-lenis-prevent', 'true')
+
+      // Cleanup function
+      return () => {
+        const scrollY = scrollPositionRef.current
+        
+        // Restore original styles
+        body.style.overflow = originalBodyOverflow
+        body.style.position = originalBodyPosition
+        body.style.top = originalBodyTop
+        body.style.left = originalBodyLeft
+        body.style.right = originalBodyRight
+        body.style.width = originalBodyWidth
+        body.style.paddingRight = originalBodyPaddingRight
+        html.style.overflow = originalHtmlOverflow
+        
+        // Remove Lenis stop class
+        html.classList.remove('lenis-stopped')
+        
+        // Remove Lenis prevent attributes
+        html.removeAttribute('data-lenis-prevent')
+        body.removeAttribute('data-lenis-prevent')
+        
+        // Restore scroll position
+        requestAnimationFrame(() => {
+          window.scrollTo({
+            top: scrollY,
+            behavior: 'auto'
+          })
+        })
+      }
+    }
+  }, [isCartOpen])
+
+  const handleRemoveClick = (item) => {
+    toast.dismiss()
+    toast(
+      (t) => (
+        <div className='flex items-start gap-4 min-w-[320px]'>
+          {/* Product Image */}
+          <div className='relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100'>
+            <Image
+              src={item?.product?.image}
+              alt={item?.product?.name}
+              fill
+              className='object-cover'
+            />
+          </div>
+          
+          {/* Content */}
+          <div className='flex-1 min-w-0'>
+            <div className='flex items-center gap-2 mb-1'>
+              <BiTrash className='h-4 w-4 text-red-500 flex-shrink-0' />
+              <span className='text-sm font-semibold text-gray-900'>Remove item?</span>
+            </div>
+            <p className='text-xs text-gray-500 truncate mb-3'>
+              {item?.product?.name}
+            </p>
+            
+            {/* Actions */}
+            <div className='flex gap-2'>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className='px-4 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-all'
+              >
+                Keep
+              </button>
+              <button
+                onClick={() => {
+                  dispatch(
+                    removeFromCart({
+                      product: {
+                        _id: item?.product?._id,
+                        name: item?.product?.name,
+                        image: item?.product?.image,
+                      },
+                      variant: item?.variant,
+                    })
+                  )
+                  toast.dismiss(t.id)
+                }}
+                className='px-4 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-full hover:bg-red-600 transition-all shadow-sm'
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        duration: 8000,
+        position: 'top-center',
+        style: {
+          background: '#fff',
+          padding: '16px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
+          border: '1px solid rgba(0,0,0,0.05)',
+        },
+      }
+    )
+  }
+
+  const subtotal = cartItems?.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  )
 
   return (
-    <Sheet>
+    <Sheet open={isCartOpen} onOpenChange={(open) => dispatch(setCartOpen(open))}>
       <SheetTrigger asChild>
         <button className='relative py-2 text-white hover:text-gray-200 transition-colors flex-shrink-0'>
           {cartItems.length > 0 && (
@@ -40,171 +194,168 @@ const CartContainer = () => {
           <LucideShoppingCart className='h-6 w-6 mt-4' />
         </button>
       </SheetTrigger>
-      <SheetContent className='flex flex-col w-full sm:max-w-md bg-white'>
-        <SheetHeader className='border-b border-gray-200 pb-4'>
-          <SheetTitle className='text-2xl font-bold text-gray-900'>
-            Shopping Cart
-          </SheetTitle>
-        </SheetHeader>
-        {cartItems?.length !== 0 ? (
-          <>
-            <div className='flex-grow overflow-y-auto mt-6'>
-              {cartItems?.map((item, index) => (
-                <div
-                  key={item.product?.name + index}
-                  className='py-4 flex items-start gap-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 transition-colors rounded-lg px-2 -mx-2'
-                >
-                  <div className='relative flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg overflow-hidden ring-1 ring-gray-200'>
-                    <Image
-                      src={item?.product?.image}
-                      alt={item?.product?.name}
-                      fill
-                      className='object-cover'
-                    />
-                  </div>
+      <SheetContent
+        side='right'
+        className='flex flex-col w-full sm:max-w-md bg-white p-0 overflow-hidden h-screen'
+      >
+        <div className='flex flex-col h-full'>
+          {/* Header */}
+          <div className='border-b border-gray-200 px-6 pt-6 pb-4 flex-shrink-0'>
+            <SheetTitle className='text-xl font-bold text-gray-900'>
+              Shopping Cart
+              {cartItems.length > 0 && (
+                <span className='ml-2 text-sm font-normal text-gray-500'>
+                  ({cartItems.reduce((acc, item) => acc + item.quantity, 0)} items)
+                </span>
+              )}
+            </SheetTitle>
+          </div>
 
-                  <div className='flex flex-col flex-1 min-w-0'>
-                    <div className='flex justify-between items-start gap-2'>
+          {cartItems?.length !== 0 ? (
+            <>
+              {/* Scrollable Cart Items */}
+              <div 
+                className='flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 min-h-0 max-h-full overscroll-contain touch-pan-y'
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
+                <div className='space-y-4'>
+                  {cartItems?.map((item, index) => (
+                    <div
+                      key={item.product?.name + index}
+                      className='flex gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-gray-200 transition-all'
+                    >
+                      {/* Product Image */}
+                      <div className='relative flex-shrink-0 w-20 h-20 bg-white rounded-lg overflow-hidden border border-gray-200'>
+                        <Image
+                          src={item?.product?.image}
+                          alt={item?.product?.name}
+                          fill
+                          className='object-cover'
+                        />
+                      </div>
+
+                      {/* Product Details */}
                       <div className='flex flex-col flex-1 min-w-0'>
-                        <h5 className='text-base font-semibold text-gray-900 truncate'>
-                          {item?.product?.name}
-                        </h5>
-                        {item.variant && (
-                          <p className='text-sm text-gray-500 mt-0.5'>
-                            {item.variant}
-                          </p>
-                        )}
-                        <p className='text-base font-bold text-primary mt-2'>
-                          Rs{' '}
-                          {Number(item.price * item.quantity).toLocaleString(
-                            'en'
-                          )}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          if (
-                            confirm(
-                              'Are you sure you want to remove this item?'
-                            )
-                          )
-                            dispatch(
-                              removeFromCart({
-                                product: {
-                                  _id: item?.product?._id,
-                                  name: item?.product?.name,
-                                  image: item?.product?.image,
-                                },
-                                variant: item?.variant,
-                              })
-                            )
-                        }}
-                        className='h-8 w-8 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all duration-200 flex-shrink-0'
-                      >
-                        <BiTrash className='h-5 w-5' />
-                      </button>
-                    </div>
-                    <div className='flex items-center gap-3 mt-3'>
-                      <div className='flex items-center border border-gray-300 rounded-lg overflow-hidden'>
-                        <button
-                          onClick={() =>
-                            dispatch(
-                              subCartQuantity({
-                                product: {
-                                  _id: item?.product?._id,
-                                  name: item?.product?.name,
-                                  image: item?.product?.image,
-                                },
-                                quantity: 1,
-                                variant: item?.variant,
-                              })
-                            )
-                          }
-                          className='w-10 h-10 flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-600'
-                        >
-                          <BiMinus className='h-4 w-4' />
-                        </button>
-                        <div className='w-12 h-10 flex items-center justify-center border-x border-gray-300 font-semibold text-gray-900 bg-gray-50'>
-                          {item.quantity}
+                        <div className='flex justify-between items-start gap-2'>
+                          <div className='flex-1 min-w-0'>
+                            <h5 className='text-sm font-semibold text-gray-900 line-clamp-2'>
+                              {item?.product?.name}
+                            </h5>
+                            {item.variant && (
+                              <p className='text-xs text-gray-500 mt-1 truncate'>
+                                {item.variant}
+                              </p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleRemoveClick(item)}
+                            className='p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all flex-shrink-0'
+                          >
+                            <BiTrash className='h-4 w-4' />
+                          </button>
                         </div>
-                        <button
-                          onClick={() =>
-                            dispatch(
-                              addToCart({
-                                product: {
-                                  _id: item?.product?._id,
-                                  name: item?.product?.name,
-                                  image: item?.product?.image,
-                                },
-                                quantity: 1,
-                                variant: item?.variant,
-                              })
-                            )
-                          }
-                          className='w-10 h-10 flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-600'
-                        >
-                          <BiPlus className='h-4 w-4' />
-                        </button>
+
+                        {/* Price & Quantity */}
+                        <div className='flex items-center justify-between mt-auto pt-2'>
+                          <div className='flex items-center border border-gray-200 rounded-lg bg-white overflow-hidden'>
+                            <button
+                              onClick={() =>
+                                dispatch(
+                                  subCartQuantity({
+                                    product: {
+                                      _id: item?.product?._id,
+                                      name: item?.product?.name,
+                                      image: item?.product?.image,
+                                    },
+                                    quantity: 1,
+                                    variant: item?.variant,
+                                  })
+                                )
+                              }
+                              className='w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-600'
+                            >
+                              <BiMinus className='h-3 w-3' />
+                            </button>
+                            <span className='w-8 h-8 flex items-center justify-center text-sm font-medium text-gray-900 border-x border-gray-200'>
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() =>
+                                dispatch(
+                                  addToCart({
+                                    product: {
+                                      _id: item?.product?._id,
+                                      name: item?.product?.name,
+                                      image: item?.product?.image,
+                                    },
+                                    quantity: 1,
+                                    variant: item?.variant,
+                                  })
+                                )
+                              }
+                              className='w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-600'
+                            >
+                              <BiPlus className='h-3 w-3' />
+                            </button>
+                          </div>
+                          <p className='text-sm font-bold text-gray-900'>
+                            Rs {Number(item.price * item.quantity).toLocaleString('en')}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className='pt-4 border-t border-gray-200 mt-4 space-y-4 bg-gray-50/50 -mx-6 -mb-6 px-6 pb-6 rounded-t-xl'>
-              <div className='flex justify-between items-center'>
-                <p className='text-lg font-semibold text-gray-700'>Subtotal</p>
-                <p className='text-lg font-bold text-primary'>
-                  Rs{' '}
-                  {Number(
-                    cartItems?.reduce(
-                      (acc, item) => acc + item.price * item.quantity,
-                      0
-                    )
-                  ).toLocaleString('en')}
+              </div>
+
+              {/* Footer with Checkout - Fixed at bottom */}
+              <div className='border-t border-gray-200 px-6 py-6 bg-white flex-shrink-0'>
+                <div className='space-y-3 mb-4'>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-600'>Subtotal</span>
+                    <span className='text-lg font-bold text-gray-900'>
+                      Rs {Number(subtotal).toLocaleString('en')}
+                    </span>
+                  </div>
+                 
+                </div>
+
+                <SheetClose asChild>
+                  <Link
+                    href='/checkout'
+                    className='w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-semibold text-white transition-all hover:bg-primary/90 active:scale-[0.98]'
+                  >
+                    Proceed to Checkout
+                  </Link>
+                </SheetClose>
+
+               
+              </div>
+            </>
+          ) : (
+            <div className='flex-1 flex flex-col items-center justify-center gap-4 p-6'>
+              <div className='w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center'>
+                <LucideShoppingCart className='h-10 w-10 text-gray-400' />
+              </div>
+              <div className='text-center'>
+                <h3 className='text-lg font-semibold text-gray-900'>
+                  Your cart is empty
+                </h3>
+                <p className='text-sm text-gray-500 mt-1'>
+                  Add items to get started
                 </p>
               </div>
-              <div className='flex justify-between items-center text-sm text-gray-500'>
-                <p>Shipping</p>
-                <p>Calculated at checkout</p>
-              </div>
-
               <SheetClose asChild>
                 <Link
-                  href='/checkout'
-                  className='w-full inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3.5 text-center font-semibold text-white transition-all duration-200 ease-in-out hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.98]'
+                  href='/shop'
+                  className='inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-white transition-all hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]'
                 >
-                  <BsCart className='mr-2 h-5 w-5' />
-                  Proceed to Checkout
+                  Start Shopping
                 </Link>
               </SheetClose>
             </div>
-          </>
-        ) : (
-          <div className='flex-grow flex flex-col items-center justify-center gap-4 py-12'>
-            <div className='relative'>
-              <LucideShoppingCart className='h-16 w-16 text-gray-300' />
-              <div className='absolute inset-0 flex items-center justify-center'>
-                <div className='h-12 w-12 rounded-full bg-gray-100'></div>
-              </div>
-            </div>
-            <h3 className='text-xl font-semibold text-gray-900'>
-              Your cart is empty
-            </h3>
-            <p className='text-sm text-gray-500 text-center max-w-sm'>
-              Looks like you haven't added anything to your cart yet.
-            </p>
-            <SheetClose asChild>
-              <Link
-                href='/shop'
-                className='inline-flex items-center rounded-lg bg-primary px-6 py-3.5 text-center font-semibold text-white transition-all duration-200 ease-in-out hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.98]'
-              >
-                <BsHandbag className='mr-2 h-5 w-5' />
-                Start Shopping
-              </Link>
-            </SheetClose>
-          </div>
-        )}
+          )}
+        </div>
       </SheetContent>
     </Sheet>
   )

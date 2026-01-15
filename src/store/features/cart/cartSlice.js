@@ -5,8 +5,12 @@ const cartSlice = createSlice({
   name: 'cart',
   initialState: {
     cartItems: [],
+    isCartOpen: false,
   },
   reducers: {
+    setCartOpen(state, action) {
+      state.isCartOpen = action.payload
+    },
     addToCart(state, action) {
       let existingItem = {}
       if (!action.payload.product._id) {
@@ -113,6 +117,7 @@ export const {
   subCartQuantity,
   addCartQuantity,
   clearCart,
+  setCartOpen,
 } = cartSlice.actions
 
 export default cartSlice.reducer
