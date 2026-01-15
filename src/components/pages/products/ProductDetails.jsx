@@ -253,7 +253,7 @@ const ProductDetails = ({ product, phones }) => {
                   </SelectTrigger>
                   <SelectContent className='rounded-xl'>
                     {Array.isArray(phones) && phones.length > 7 && (
-                      <div className='sticky top-0 p-3 bg-white border-b border-gray-100'>
+                      <div className='sticky top-0 z-10 p-3 bg-white border-b border-gray-100'>
                         <div className='relative'>
                           <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
                           <input
@@ -270,7 +270,7 @@ const ProductDetails = ({ product, phones }) => {
                         </div>
                       </div>
                     )}
-                    <SelectGroup>
+                    <SelectGroup className='p-1'>
                       {phones
                         ?.filter((brand) =>
                           !brandSearch
@@ -302,46 +302,46 @@ const ProductDetails = ({ product, phones }) => {
                     <SelectValue placeholder={selectedBrand ? 'Choose your phone model...' : 'Select a brand first'} />
                   </SelectTrigger>
                   <SelectContent className='rounded-xl'>
-                    <SelectGroup>
-                      {(() => {
-                        const selectedPhone = phones?.find((phone) => phone.name === selectedBrand)
-                        const models = selectedPhone?.models || []
-                        const shouldShowSearch = models.length > 7
-                        const filteredModels = models.filter((model) =>
-                          !modelSearch
-                            ? true
-                            : model?.name?.toLowerCase().includes(modelSearch.toLowerCase())
-                        )
+                    {(() => {
+                      const selectedPhone = phones?.find((phone) => phone.name === selectedBrand)
+                      const models = selectedPhone?.models || []
+                      const shouldShowSearch = models.length > 7
+                      const filteredModels = models.filter((model) =>
+                        !modelSearch
+                          ? true
+                          : model?.name?.toLowerCase().includes(modelSearch.toLowerCase())
+                      )
 
-                        return (
-                          <>
-                            {shouldShowSearch && (
-                              <div className='sticky top-0 p-3 bg-white border-b border-gray-100'>
-                                <div className='relative'>
-                                  <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
-                                  <input
-                                    type='text'
-                                    value={modelSearchInput}
-                                    onChange={(e) => setModelSearchInput(e.target.value)}
-                                    placeholder='Search model...'
-                                    className='w-full rounded-lg border border-gray-200 pl-10 pr-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400 transition-all'
-                                    onKeyDown={(e) => e.stopPropagation()}
-                                    onKeyUp={(e) => e.stopPropagation()}
-                                    onClick={(e) => e.stopPropagation()}
-                                    onPointerDown={(e) => e.stopPropagation()}
-                                  />
-                                </div>
+                      return (
+                        <>
+                          {shouldShowSearch && (
+                            <div className='sticky top-0 z-10 p-3 bg-white border-b border-gray-100'>
+                              <div className='relative'>
+                                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
+                                <input
+                                  type='text'
+                                  value={modelSearchInput}
+                                  onChange={(e) => setModelSearchInput(e.target.value)}
+                                  placeholder='Search model...'
+                                  className='w-full rounded-lg border border-gray-200 pl-10 pr-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400 transition-all'
+                                  onKeyDown={(e) => e.stopPropagation()}
+                                  onKeyUp={(e) => e.stopPropagation()}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onPointerDown={(e) => e.stopPropagation()}
+                                />
                               </div>
-                            )}
+                            </div>
+                          )}
+                          <SelectGroup className='p-1'>
                             {filteredModels.map((model) => (
                               <SelectItem key={model._id} value={model.name} className='py-3'>
                                 {model.name}
                               </SelectItem>
                             ))}
-                          </>
-                        )
-                      })()}
-                    </SelectGroup>
+                          </SelectGroup>
+                        </>
+                      )
+                    })()}
                   </SelectContent>
                 </Select>
               </div>

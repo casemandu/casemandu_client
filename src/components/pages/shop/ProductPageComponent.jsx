@@ -77,7 +77,7 @@ const ProductPageComponent = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showSidebar, setShowSidebar] = useState(false)
-  const [gridCols, setGridCols] = useState(3)
+  const [gridCols, setGridCols] = useState(4)
   const [pageSize, setPageSize] = useState(() => initialProducts?.limit || 30)
   const [totalResults, setTotalResults] = useState(() => {
     if (typeof initialProducts?.total === 'number') return initialProducts.total

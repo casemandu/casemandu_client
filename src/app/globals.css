@@ -5,6 +5,30 @@
 ::-webkit-scrollbar {
   display: none;
 }
+
+/* Show scrollbar for select dropdowns */
+[data-radix-select-viewport]::-webkit-scrollbar,
+[data-radix-popper-content-wrapper] *::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+[data-radix-select-viewport]::-webkit-scrollbar-track,
+[data-radix-popper-content-wrapper] *::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+[data-radix-select-viewport]::-webkit-scrollbar-thumb,
+[data-radix-popper-content-wrapper] *::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+[data-radix-select-viewport]::-webkit-scrollbar-thumb:hover,
+[data-radix-popper-content-wrapper] *::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
 @layer base {
   :root {
     --background: 0 0% 100%;
