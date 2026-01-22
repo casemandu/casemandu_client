@@ -3,7 +3,7 @@ import { addToCart, setCartOpen } from '@/store/features/cart/cartSlice'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 import { BiMinus, BiPlus } from 'react-icons/bi'
 import { BsPhone } from 'react-icons/bs'
 import { Search, ShoppingBag, Zap, Check, ChevronDown, Truck, Shield, RotateCcw } from 'lucide-react'
@@ -47,20 +47,17 @@ const ProductDetails = ({ product, phones }) => {
   const getCartItemData = () => {
     if (product?.category?.isCase) {
       if (!selectedBrand || !selectedModel) {
-        toast.dismiss()
         toast.error('Please select the phone brand and model')
         return null
       }
 
       if (!productOptions?.variant?.name) {
-        toast.dismiss()
         toast.error('Please select a variant')
         return null
       }
     }
 
     if (product?.category?.extraField && !extraValue) {
-      toast.dismiss()
       toast.error(`Please enter the ${product?.category?.extraField}`)
       return null
     }

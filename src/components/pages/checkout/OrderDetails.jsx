@@ -3,7 +3,7 @@ import { districtOptions } from "@/data/districtOptions";
 import { paymentMethods } from "@/data/paymentMethods";
 // import axios from 'axios'
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { BiCart, BiMailSend, BiMap, BiPhone, BiUser } from "react-icons/bi";
 import { CiDiscount1 } from "react-icons/ci";
 import { TbLocation } from "react-icons/tb";
@@ -194,7 +194,6 @@ const OrderDetails = () => {
 
   const checkPromoCode = async (code) => {
     if (!code) {
-      toast.dismiss();
       return toast.error("Please enter a promo code.");
     }
     try {
@@ -238,7 +237,6 @@ const OrderDetails = () => {
       }
     } catch (error) {
       setCheckingPromoCode(false);
-      toast.dismiss();
       return toast.error(
         error?.response?.data?.message || "Invalid promo code."
       );
@@ -568,14 +566,12 @@ const OrderDetails = () => {
           <Button
             onClick={() => {
               if (cartItems.length === 0) {
-                toast.dismiss();
                 return toast.error(
                   "Your cart is empty. Please add items to cart."
                 );
               }
 
               if (!orderDetails.paymentMethod) {
-                toast.dismiss();
                 return toast.error("Please select a payment method.");
               }
 
@@ -603,7 +599,6 @@ const OrderDetails = () => {
                 nameError ||
                 addressError
               ) {
-                toast.dismiss();
                 if (emailError) {
                   return toast.error(emailError);
                 }

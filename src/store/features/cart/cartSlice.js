@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 
 const cartSlice = createSlice({
   name: 'cart',
@@ -28,7 +28,6 @@ const cartSlice = createSlice({
       }
       if (existingItem) {
         existingItem.quantity += action.payload.quantity
-        toast.dismiss()
         toast.success(
           `${action.payload.product.name} increased by ${action.payload.quantity} in cart`
         )
@@ -55,7 +54,6 @@ const cartSlice = createSlice({
         }
       })
 
-      toast.dismiss()
       toast.success(`${action.payload.product.name} removed from cart`)
     },
     subCartQuantity(state, action) {
@@ -77,7 +75,6 @@ const cartSlice = createSlice({
 
       if (existingItem) {
         existingItem.quantity -= action.payload.quantity
-        toast.dismiss()
         toast.error(
           `${action.payload.product.name} decreased by ${action.payload.quantity} in cart`
         )
@@ -99,7 +96,6 @@ const cartSlice = createSlice({
       })
       if (existingItem) {
         existingItem.quantity += action.payload.quantity
-        toast.dismiss()
         toast.success(
           `${action.payload.product.name} increased by ${action.payload.quantity} in cart`
         )

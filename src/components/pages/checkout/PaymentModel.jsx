@@ -4,7 +4,7 @@ import { clearCart } from "@/store/features/cart/cartSlice";
 import { useAddOrderMutation } from "@/store/features/order/orderSlice";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { BsUpload } from "react-icons/bs";
 import { GoPlus } from "react-icons/go";
 import { RxCross2 } from "react-icons/rx";
@@ -33,7 +33,6 @@ const PaymentModel = ({ setShowModal, order }) => {
 
   useEffect(() => {
     if (isError) {
-      toast.dismiss();
       const errorMessage = error?.data?.message || 
                           error?.message || 
                           "Failed to place order. Please try again.";
@@ -46,7 +45,6 @@ const PaymentModel = ({ setShowModal, order }) => {
 
   const handlePaymentConfirmation = async () => {
     if (!paymentImage) {
-      toast.dismiss();
       return toast.error("Please upload the payment screenshot");
     }
     setIsUploading(true);
@@ -108,7 +106,6 @@ const PaymentModel = ({ setShowModal, order }) => {
     } catch (error) {
       setIsUploading(false);
       console.error("Order creation error:", error);
-      toast.dismiss();
       
       // Extract error message from various possible error structures
       let errorMessage = "Failed to place order. Please try again.";
