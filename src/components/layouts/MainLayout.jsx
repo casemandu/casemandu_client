@@ -1,6 +1,6 @@
 "use client";
 import React, { Suspense, useState, useEffect } from "react";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "sonner";
 import Header from "@/components/common/headers/Header";
 import MobileMenuDrawer from "@/components/common/headers/MobileMenuDrawer";
 import Footer from "@/components/common/footers/Footer";
@@ -50,37 +50,9 @@ const MainLayout = ({ children }) => {
           )}
           <Toaster
             position="top-center"
-            reverseOrder={false}
-            gutter={8}
-            containerClassName=""
-            containerStyle={{}}
-            toastOptions={{
-              // Default options
-              duration: 3000,
-              style: {
-                background: '#fff',
-                color: '#1f2937',
-                maxWidth: '90%',
-                border: '1px solid #e5e7eb',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-              },
-              // Default options for all types
-              className: '',
-              success: {
-                duration: 3000,
-                iconTheme: {
-                  primary: '#4ade80',
-                  secondary: '#fff',
-                },
-              },
-              error: {
-                duration: 4000,
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
-                },
-              },
-            }}
+            richColors
+            closeButton
+            duration={3000}
           />
           <Header setIsOpenCart={setIsOpenCart} setIsMenuOpen={setIsMenuOpen} />
           {children}
