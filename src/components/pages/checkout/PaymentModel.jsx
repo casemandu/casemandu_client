@@ -130,12 +130,12 @@ const PaymentModel = ({ setShowModal, order }) => {
   };
   return (
     <>
-      <div className="mx-0 sm:mx-3 md:mx-4 justify-center items-start sm:items-center flex overflow-x-hidden fixed inset-0 z-50 outline-none focus:outline-none p-0 sm:p-4">
+      <div className="mx-0 sm:mx-3 md:mx-4 justify-center items-start sm:items-center flex overflow-x-hidden fixed inset-0 z-[9999] outline-none focus:outline-none p-0 sm:p-4">
         <div className="max-w-3xl w-full h-full sm:h-auto sm:my-auto sm:max-h-[calc(100vh-2rem)] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="relative bg-white rounded-lg shadow-xl m-2 sm:my-5 p-4 sm:p-6">
             <GoPlus
               onClick={() => setShowModal(false)}
-              className="rotate-45 w-6 h-6 sm:w-8 sm:h-8 absolute right-3 top-3 sm:right-4 sm:top-4 cursor-pointer hover:text-black/75 hover:bg-black/10 rounded-full duration-300 z-40"
+              className="rotate-45 w-6 h-6 sm:w-8 sm:h-8 absolute right-3 top-3 sm:right-4 sm:top-4 cursor-pointer hover:text-black/75 hover:bg-black/10 rounded-full duration-300 z-[10000]"
             />
 
             <h1 className="text-xl sm:text-2xl font-medium pr-8 sm:pr-10">
@@ -241,7 +241,7 @@ const PaymentModel = ({ setShowModal, order }) => {
           </div>
         </div>
       </div>
-      <div className="opacity-50 fixed inset-0 z-40 bg-black"></div>
+      <div className="opacity-50 fixed inset-0 z-[9998] bg-black"></div>
     </>
   );
 };

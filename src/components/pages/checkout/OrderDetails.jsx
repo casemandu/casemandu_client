@@ -38,6 +38,12 @@ const OrderDetails = () => {
   }, [showModal]);
 
   const [checkingPromoCode, setCheckingPromoCode] = useState(false);
+  const [errors, setErrors] = useState({
+    email: "",
+    phone: "",
+    name: "",
+    shippingAddress: "",
+  });
 
   const { cartItems } = useSelector((state) => state.cart);
 
@@ -60,6 +66,53 @@ const OrderDetails = () => {
     })),
   });
 
+  // Email validation function
+  const validateEmail = (email) => {
+    if (!email) {
+      return "Email is required";
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+    return "";
+  };
+
+  // Phone validation function (Nepal phone numbers)
+  const validatePhone = (phone) => {
+    if (!phone) {
+      return "Phone number is required";
+    }
+    // Nepal phone numbers: 98XXXXXXXX or 97XXXXXXXX (10 digits starting with 98 or 97)
+    const phoneRegex = /^(98|97)[0-9]{8}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ""))) {
+      return "Please enter a valid 10-digit phone number (starting with 98 or 97)";
+    }
+    return "";
+  };
+
+  // Name validation
+  const validateName = (name) => {
+    if (!name || name.trim().length === 0) {
+      return "Name is required";
+    }
+    if (name.trim().length < 2) {
+      return "Name must be at least 2 characters";
+    }
+    return "";
+  };
+
+  // Address validation
+  const validateAddress = (address) => {
+    if (!address || address.trim().length === 0) {
+      return "Shipping address is required";
+    }
+    if (address.trim().length < 5) {
+      return "Address must be at least 5 characters";
+    }
+    return "";
+  };
+
   const [priceSummary, setPriceSummary] = useState({
     promoCode: "",
     subtotal: cartItems.reduce(
@@ -79,10 +132,35 @@ const OrderDetails = () => {
   });
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
     setOrderDetails({
       ...orderDetails,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    // Real-time validation
+    if (name === "email") {
+      setErrors({
+        ...errors,
+        email: validateEmail(value),
+      });
+    } else if (name === "phone") {
+      setErrors({
+        ...errors,
+        phone: validatePhone(value),
+      });
+    } else if (name === "name") {
+      setErrors({
+        ...errors,
+        name: validateName(value),
+      });
+    } else if (name === "shippingAddress") {
+      setErrors({
+        ...errors,
+        shippingAddress: validateAddress(value),
+      });
+    }
   };
 
   useEffect(() => {
@@ -232,18 +310,27 @@ const OrderDetails = () => {
                 type="text"
                 id="name"
                 name="name"
-                className="pl-11"
+                className={`pl-11 ${errors.name ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
                 placeholder="John Doe"
                 value={orderDetails.name
                   .split(" ")
                   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                   .join(" ")}
                 onChange={handleChange}
+                onBlur={(e) => {
+                  setErrors({
+                    ...errors,
+                    name: validateName(e.target.value),
+                  });
+                }}
               />
               <div className="pointer-events-none absolute inset-y-0 left-0 inline-flex items-center px-3">
                 <BiUser className="h-4 w-4 text-gray-400" />
               </div>
             </div>
+            {errors.name && (
+              <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+            )}
             <label
               htmlFor="phone"
               className="mt-4 mb-2 block text-sm font-medium"
@@ -255,15 +342,25 @@ const OrderDetails = () => {
                 type="tel"
                 id="phone"
                 name="phone"
-                className="pl-11"
+                className={`pl-11 ${errors.phone ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
                 placeholder="98XXXXXXXX"
                 value={orderDetails.phone}
                 onChange={handleChange}
+                onBlur={(e) => {
+                  setErrors({
+                    ...errors,
+                    phone: validatePhone(e.target.value),
+                  });
+                }}
+                maxLength={10}
               />
               <div className="pointer-events-none absolute inset-y-0 left-0 inline-flex items-center px-3">
                 <BiPhone className="h-4 w-4 text-gray-400" />
               </div>
             </div>
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+            )}
 
             <label
               htmlFor="email"
@@ -276,15 +373,24 @@ const OrderDetails = () => {
                 type="email"
                 id="email"
                 name="email"
-                className="pl-11"
+                className={`pl-11 ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
                 placeholder="example@gmail.com"
                 value={orderDetails.email}
                 onChange={handleChange}
+                onBlur={(e) => {
+                  setErrors({
+                    ...errors,
+                    email: validateEmail(e.target.value),
+                  });
+                }}
               />
               <div className="pointer-events-none absolute inset-y-0 left-0 inline-flex items-center px-3">
                 <BiMailSend className="h-4 w-4 text-gray-400" />
               </div>
             </div>
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+            )}
 
             <label
               htmlFor="card-no"
@@ -333,15 +439,24 @@ const OrderDetails = () => {
                 type="text"
                 id="shippingAddress"
                 name="shippingAddress"
-                className="pl-11"
+                className={`pl-11 ${errors.shippingAddress ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
                 placeholder="Kanakai 04, Surunga"
                 value={orderDetails.shippingAddress}
                 onChange={handleChange}
+                onBlur={(e) => {
+                  setErrors({
+                    ...errors,
+                    shippingAddress: validateAddress(e.target.value),
+                  });
+                }}
               />
               <div className="pointer-events-none absolute inset-y-0 left-0 inline-flex items-center px-3">
                 <TbLocation className="h-4 w-4 text-gray-400" />
               </div>
             </div>
+            {errors.shippingAddress && (
+              <p className="mt-1 text-sm text-red-500">{errors.shippingAddress}</p>
+            )}
 
             <label
               htmlFor="additionalInfo"
@@ -464,13 +579,43 @@ const OrderDetails = () => {
                 return toast.error("Please select a payment method.");
               }
 
+              // Validate all fields
+              const emailError = validateEmail(orderDetails.email);
+              const phoneError = validatePhone(orderDetails.phone);
+              const nameError = validateName(orderDetails.name);
+              const addressError = validateAddress(orderDetails.shippingAddress);
+
+              setErrors({
+                email: emailError,
+                phone: phoneError,
+                name: nameError,
+                shippingAddress: addressError,
+              });
+
               if (
                 !orderDetails.name ||
                 !orderDetails.phone ||
                 !orderDetails.city ||
-                !orderDetails.shippingAddress || !orderDetails.email
+                !orderDetails.shippingAddress ||
+                !orderDetails.email ||
+                emailError ||
+                phoneError ||
+                nameError ||
+                addressError
               ) {
                 toast.dismiss();
+                if (emailError) {
+                  return toast.error(emailError);
+                }
+                if (phoneError) {
+                  return toast.error(phoneError);
+                }
+                if (nameError) {
+                  return toast.error(nameError);
+                }
+                if (addressError) {
+                  return toast.error(addressError);
+                }
                 return toast.error("Please fill all the required fields.");
               }
               setShowModal(true);
