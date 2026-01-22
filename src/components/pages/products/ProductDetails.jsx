@@ -209,14 +209,14 @@ const ProductDetails = ({ product, phones }) => {
           )}
 
           {/* Features */}
-          {product?.features?.length > 0 && (
+          {product?.features && product?.features?.length > 0 && (
             <div className='bg-gray-50 rounded-xl p-4'>
               <h3 className='text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2'>
                 <Check className='h-4 w-4 text-green-500' />
                 Key Features
               </h3>
               <ul className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
-                {product.features.slice(0, 6).map((feature, index) => (
+                {product.features.map((feature, index) => (
                   <li key={index} className='flex items-start gap-2 text-sm text-gray-600'>
                     <Check className='h-4 w-4 text-green-500 flex-shrink-0 mt-0.5' />
                     <span>{feature}</span>

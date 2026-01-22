@@ -196,7 +196,7 @@ const CartContainer = () => {
       </SheetTrigger>
       <SheetContent
         side='right'
-        className='flex flex-col w-full sm:max-w-md bg-white p-0 overflow-hidden h-screen'
+        className='flex flex-col w-full sm:max-w-md bg-white p-0 overflow-hidden h-[calc(var(--vh,1vh)*100)] sm:h-full'
       >
         <div className='flex flex-col h-full'>
           {/* Header */}
