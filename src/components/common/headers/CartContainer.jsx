@@ -16,7 +16,7 @@ import { LucideShoppingCart } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 import { BiMinus, BiPlus, BiTrash } from 'react-icons/bi'
 import { BsCart, BsHandbag } from 'react-icons/bs'
 import { useDispatch, useSelector } from 'react-redux'
@@ -105,72 +105,60 @@ const CartContainer = () => {
   }, [isCartOpen])
 
   const handleRemoveClick = (item) => {
-    toast.dismiss()
-    toast(
-      (t) => (
-        <div className='flex items-start gap-4 min-w-[320px]'>
-          {/* Product Image */}
-          <div className='relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100'>
-            <Image
-              src={item?.product?.image}
-              alt={item?.product?.name}
-              fill
-              className='object-cover'
-            />
+    toast.custom((t) => (
+      <div className='flex items-start gap-4 min-w-[320px] bg-white p-4 rounded-2xl shadow-lg border border-gray-100'>
+        {/* Product Image */}
+        <div className='relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100'>
+          <Image
+            src={item?.product?.image}
+            alt={item?.product?.name}
+            fill
+            className='object-cover'
+          />
+        </div>
+        
+        {/* Content */}
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-2 mb-1'>
+            <BiTrash className='h-4 w-4 text-red-500 flex-shrink-0' />
+            <span className='text-sm font-semibold text-gray-900'>Remove item?</span>
           </div>
+          <p className='text-xs text-gray-500 truncate mb-3'>
+            {item?.product?.name}
+          </p>
           
-          {/* Content */}
-          <div className='flex-1 min-w-0'>
-            <div className='flex items-center gap-2 mb-1'>
-              <BiTrash className='h-4 w-4 text-red-500 flex-shrink-0' />
-              <span className='text-sm font-semibold text-gray-900'>Remove item?</span>
-            </div>
-            <p className='text-xs text-gray-500 truncate mb-3'>
-              {item?.product?.name}
-            </p>
-            
-            {/* Actions */}
-            <div className='flex gap-2'>
-              <button
-                onClick={() => toast.dismiss(t.id)}
-                className='px-4 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-all'
-              >
-                Keep
-              </button>
-              <button
-                onClick={() => {
-                  dispatch(
-                    removeFromCart({
-                      product: {
-                        _id: item?.product?._id,
-                        name: item?.product?.name,
-                        image: item?.product?.image,
-                      },
-                      variant: item?.variant,
-                    })
-                  )
-                  toast.dismiss(t.id)
-                }}
-                className='px-4 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-full hover:bg-red-600 transition-all shadow-sm'
-              >
-                Remove
-              </button>
-            </div>
+          {/* Actions */}
+          <div className='flex gap-2'>
+            <button
+              onClick={() => toast.dismiss(t)}
+              className='px-4 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-all'
+            >
+              Keep
+            </button>
+            <button
+              onClick={() => {
+                dispatch(
+                  removeFromCart({
+                    product: {
+                      _id: item?.product?._id,
+                      name: item?.product?.name,
+                      image: item?.product?.image,
+                    },
+                    variant: item?.variant,
+                  })
+                )
+                toast.dismiss(t)
+              }}
+              className='px-4 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-full hover:bg-red-600 transition-all shadow-sm'
+            >
+              Remove
+            </button>
           </div>
         </div>
-      ),
-      {
-        duration: 8000,
-        position: 'top-center',
-        style: {
-          background: '#fff',
-          padding: '16px',
-          borderRadius: '16px',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
-          border: '1px solid rgba(0,0,0,0.05)',
-        },
-      }
-    )
+      </div>
+    ), {
+      duration: 8000,
+    })
   }
 
   const subtotal = cartItems?.reduce(

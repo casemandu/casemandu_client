@@ -1,4 +1,4 @@
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 
 const uploadImageToIMGBB = async (image) => {
   try {
@@ -17,11 +17,12 @@ const uploadImageToIMGBB = async (image) => {
 
     return data
   } catch (error) {
-    return toast.error(
+    toast.error(
       error.response && error.response.data.error.message
         ? error.response.data.error.message
         : 'Failed to upload image'
     )
+    throw error
   }
 }
 

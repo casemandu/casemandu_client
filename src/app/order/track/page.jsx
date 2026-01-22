@@ -1,6 +1,6 @@
 'use client'
 import { trackMyOrder } from '@/frontend/lib/orderActionClient'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { BsCart2, BsPhone } from 'react-icons/bs'
@@ -21,7 +21,6 @@ const OrderTractPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.orderId || !formData.phoneNumber) {
-      toast.dismiss()
       return toast.error('Please fill all the fields')
     }
     setIsLoading(true)
@@ -38,7 +37,6 @@ const OrderTractPage = () => {
       setIsLoading(false)
     } catch (error) {
       setIsLoading(false)
-      toast.dismiss()
       toast.error(error && error.message ? error.message : error)
     }
   }
