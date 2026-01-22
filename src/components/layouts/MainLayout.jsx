@@ -49,9 +49,9 @@ const MainLayout = ({ children }) => {
             />
           )}
           <Toaster
-            position="top-center"
+            position="top-right"
             richColors
-            closeButton
+            closeButton={false}
             duration={3000}
           />
           <Header setIsOpenCart={setIsOpenCart} setIsMenuOpen={setIsMenuOpen} />

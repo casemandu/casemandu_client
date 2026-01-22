@@ -233,3 +233,12 @@
     font-size: 22px;
   }
 }
+
+/* Sonner toast z-index - ensure toasts appear above sidebar (z-50) */
+[data-sonner-toaster] {
+  z-index: 100 !important;
+}
+
+[data-sonner-toast] {
+  z-index: 100 !important;
+}

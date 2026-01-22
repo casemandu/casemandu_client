@@ -15,7 +15,8 @@ import {
 import { LucideShoppingCart } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { BiMinus, BiPlus, BiTrash } from 'react-icons/bi'
 import { BsCart, BsHandbag } from 'react-icons/bs'
@@ -104,70 +105,155 @@ const CartContainer = () => {
     }
   }, [isCartOpen])
 
-  const handleRemoveClick = (item) => {
-    toast.custom((t) => (
-      <div className='flex items-start gap-4 min-w-[320px] bg-white p-4 rounded-2xl shadow-lg border border-gray-100'>
-        {/* Product Image */}
-        <div className='relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100'>
-          <Image
-            src={item?.product?.image}
-            alt={item?.product?.name}
-            fill
-            className='object-cover'
-          />
-        </div>
-        
-        {/* Content */}
-        <div className='flex-1 min-w-0'>
-          <div className='flex items-center gap-2 mb-1'>
-            <BiTrash className='h-4 w-4 text-red-500 flex-shrink-0' />
-            <span className='text-sm font-semibold text-gray-900'>Remove item?</span>
-          </div>
-          <p className='text-xs text-gray-500 truncate mb-3'>
-            {item?.product?.name}
-          </p>
-          
-          {/* Actions */}
-          <div className='flex gap-2'>
-            <button
-              onClick={() => toast.dismiss(t)}
-              className='px-4 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-all'
-            >
-              Keep
-            </button>
-            <button
-              onClick={() => {
-                dispatch(
-                  removeFromCart({
-                    product: {
-                      _id: item?.product?._id,
-                      name: item?.product?.name,
-                      image: item?.product?.image,
-                    },
-                    variant: item?.variant,
-                  })
-                )
-                toast.dismiss(t)
-              }}
-              className='px-4 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-full hover:bg-red-600 transition-all shadow-sm'
-            >
-              Remove
-            </button>
-          </div>
-        </div>
-      </div>
-    ), {
-      duration: 8000,
-    })
-  }
+  const [itemToRemove, setItemToRemove] = useState(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Handle client-side mounting for portal
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Disable pointer events on Sheet overlay when modal is open
+  useEffect(() => {
+    if (itemToRemove && mounted) {
+      // Find and disable pointer events on Sheet overlay
+      const sheetOverlay = document.querySelector('[data-radix-dialog-overlay]')
+      if (sheetOverlay) {
+        sheetOverlay.style.pointerEvents = 'none'
+      }
+
+      return () => {
+        // Re-enable pointer events when modal closes
+        if (sheetOverlay) {
+          sheetOverlay.style.pointerEvents = 'auto'
+        }
+      }
+    }
+  }, [itemToRemove, mounted])
 
   const subtotal = cartItems?.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   )
 
+  const handleRemoveClick = (item, e) => {
+    // Prevent any event from bubbling up
+    if (e) {
+      e.stopPropagation()
+      e.preventDefault()
+    }
+    setItemToRemove(item)
+  }
+
+  const handleConfirmRemove = () => {
+    if (itemToRemove) {
+      dispatch(
+        removeFromCart({
+          product: {
+            _id: itemToRemove?.product?._id,
+            name: itemToRemove?.product?.name,
+            image: itemToRemove?.product?.image,
+          },
+          variant: itemToRemove?.variant,
+        })
+      )
+      setItemToRemove(null)
+    }
+  }
+
+  const handleCancelRemove = () => {
+    setItemToRemove(null)
+  }
+
   return (
-    <Sheet open={isCartOpen} onOpenChange={(open) => dispatch(setCartOpen(open))}>
+    <>
+      {/* Remove Confirmation Modal - Rendered in Portal */}
+      {itemToRemove && mounted && createPortal(
+        <div
+          className='fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50'
+          onClick={handleCancelRemove}
+          style={{
+            pointerEvents: 'auto',
+            zIndex: 9999
+          }}
+        >
+          <div
+            className='flex items-start gap-4 min-w-[320px] max-w-[90vw] bg-white p-5 rounded-2xl shadow-2xl border border-gray-200 relative'
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{
+              pointerEvents: 'auto',
+              zIndex: 10000,
+              position: 'relative'
+            }}
+          >
+            {/* Product Image */}
+            <div className='relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100'>
+              <Image
+                src={itemToRemove?.product?.image}
+                alt={itemToRemove?.product?.name}
+                fill
+                className='object-cover'
+              />
+            </div>
+
+            {/* Content */}
+            <div className='flex-1 min-w-0'>
+              <div className='flex items-center gap-2 mb-2'>
+                <BiTrash className='h-5 w-5 text-red-500 flex-shrink-0' />
+                <span className='text-base font-semibold text-gray-900'>Remove item?</span>
+              </div>
+              <p className='text-sm text-gray-600 mb-4 line-clamp-2'>
+                {itemToRemove?.product?.name}
+                {itemToRemove?.variant && (
+                  <span className='text-gray-500'> - {itemToRemove.variant}</span>
+                )}
+              </p>
+
+              {/* Actions */}
+              <div className='flex gap-3'>
+                <button
+                  type='button'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleCancelRemove()
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className='px-5 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all cursor-pointer'
+                  style={{ pointerEvents: 'auto' }}
+                >
+                  Keep
+                </button>
+                <button
+                  type='button'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleConfirmRemove()
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className='px-5 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition-all shadow-sm cursor-pointer'
+                  style={{ pointerEvents: 'auto' }}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      <Sheet
+        open={isCartOpen}
+        onOpenChange={(open) => {
+          if (!itemToRemove) {
+            dispatch(setCartOpen(open))
+          }
+        }}
+      >
       <SheetTrigger asChild>
         <button className='relative py-2 text-white hover:text-gray-200 transition-colors flex-shrink-0'>
           {cartItems.length > 0 && (
@@ -211,6 +297,7 @@ const CartContainer = () => {
                     <div
                       key={item.product?.name + index}
                       className='flex gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-gray-200 transition-all'
+                      onClick={(e) => e.stopPropagation()}
                     >
                       {/* Product Image */}
                       <div className='relative flex-shrink-0 w-20 h-20 bg-white rounded-lg overflow-hidden border border-gray-200'>
@@ -236,7 +323,17 @@ const CartContainer = () => {
                             )}
                           </div>
                           <button
-                            onClick={() => handleRemoveClick(item)}
+                            onPointerDown={(e) => {
+                              e.stopPropagation()
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              e.preventDefault()
+                              handleRemoveClick(item, e)
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation()
+                            }}
                             className='p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all flex-shrink-0'
                           >
                             <BiTrash className='h-4 w-4' />
@@ -346,6 +443,7 @@ const CartContainer = () => {
         </div>
       </SheetContent>
     </Sheet>
+    </>
   )
 }
 

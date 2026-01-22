@@ -75,7 +75,7 @@ const cartSlice = createSlice({
 
       if (existingItem) {
         existingItem.quantity -= action.payload.quantity
-        toast.error(
+        toast.success(
           `${action.payload.product.name} decreased by ${action.payload.quantity} in cart`
         )
       }
