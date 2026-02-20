@@ -1,10 +1,13 @@
 'use client'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import React, { useRef, useState } from 'react'
-
-import { EffectFlip } from 'swiper/modules'
-
-import { Autoplay, Pagination, Navigation } from 'swiper/modules'
+import React from 'react'
+import { Autoplay, Pagination, Navigation, EffectFlip } from 'swiper/modules'
+import Image from 'next/image'
+// Import Swiper CSS - Next.js will code-split this automatically
+import 'swiper/css'
+import 'swiper/css/pagination'
+import 'swiper/css/navigation'
+import 'swiper/css/effect-fade'
 
 const HeroSlider = () => {
   const sliderData = [
@@ -44,12 +47,17 @@ const HeroSlider = () => {
       >
         {sliderData?.map((slide) => (
           <SwiperSlide key={slide._id}>
-            <div
-              className='h-full w-full bg-cover bg-center bg-no-repeat'
-              style={{
-                backgroundImage: `url(${slide.thumbImage})`,
-              }}
-            ></div>
+            <div className='relative h-full w-full'>
+              <Image
+                src={slide.thumbImage}
+                alt={slide.name}
+                fill
+                priority={slide._id === 1} // Only first image is priority
+                className='object-cover'
+                sizes='100vw'
+                quality={85}
+              />
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>

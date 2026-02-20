@@ -1,14 +1,17 @@
 'use client'
-import React from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 
-const CategoryBentoGrid = ({ categories = [] }) => {
-  if (!categories || categories.length === 0) return null
+const CategoryBentoGrid = React.memo(({ categories = [] }) => {
+  const displayCategories = useMemo(() => {
+    if (!categories || categories.length === 0) return []
+    return categories.filter(cat => cat?.displayOnHead !== false).slice(0, 6)
+  }, [categories])
 
-  const displayCategories = categories.filter(cat => cat?.displayOnHead !== false).slice(0, 6)
+  if (!displayCategories || displayCategories.length === 0) return null
 
   const getGridClass = (index) => {
     const layouts = [
@@ -105,7 +108,9 @@ const CategoryBentoGrid = ({ categories = [] }) => {
       </div>
     </section>
   )
-}
+});
+
+CategoryBentoGrid.displayName = 'CategoryBentoGrid';
 
 export default CategoryBentoGrid
 

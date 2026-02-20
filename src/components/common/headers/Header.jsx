@@ -13,36 +13,43 @@ const Header = ({ setIsOpenCart, setIsMenuOpen }) => {
   useEffect(() => {
     const body = document.body;
     let lastScroll = 0;
+    let ticking = false;
 
     const handleScroll = () => {
-      const currentScroll = window.pageYOffset;
-      if (currentScroll <= 0) {
-        body.classList.remove("scroll-down");
-        body.classList.remove("scroll-up");
-        return;
-      }
+      if (ticking) return;
+      
+      ticking = true;
+      requestAnimationFrame(() => {
+        const currentScroll = window.pageYOffset;
+        if (currentScroll <= 0) {
+          body.classList.remove("scroll-down");
+          body.classList.remove("scroll-up");
+          ticking = false;
+          return;
+        }
 
-      if (
-        currentScroll > lastScroll &&
-        currentScroll > 300 &&
-        !body.classList.contains("scroll-down")
-      ) {
-        body.classList.add("scroll-down");
-        body.classList.add("scroll-down");
-      }
+        if (
+          currentScroll > lastScroll &&
+          currentScroll > 300 &&
+          !body.classList.contains("scroll-down")
+        ) {
+          body.classList.add("scroll-down");
+        }
 
-      if (
-        currentScroll < lastScroll &&
-        body.classList.contains("scroll-down")
-      ) {
-        body.classList.remove("scroll-down");
-        body.classList.add("scroll-up");
-      }
+        if (
+          currentScroll < lastScroll &&
+          body.classList.contains("scroll-down")
+        ) {
+          body.classList.remove("scroll-down");
+          body.classList.add("scroll-up");
+        }
 
-      lastScroll = currentScroll;
+        lastScroll = currentScroll;
+        ticking = false;
+      });
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     
     return () => {
       window.removeEventListener("scroll", handleScroll);

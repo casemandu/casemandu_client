@@ -1,22 +1,20 @@
 'use client'
-import React from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
-const ProductBox = ({ product, type }) => {
+const ProductBox = React.memo(({ product, type }) => {
   const pathname = usePathname()
-  const isOfferPage = pathname?.includes('offer')
-  const isShopPage = pathname?.includes('shop')
+  const isOfferPage = useMemo(() => pathname?.includes('offer'), [pathname])
+  const isShopPage = useMemo(() => pathname?.includes('shop'), [pathname])
 
-  const calculateRangeText = (product) => {
-    if (product?.discount) {
-      const discountPrice = (product?.price * product?.discount) / 100
-      const finalPrice = product?.price - discountPrice
-      return `Rs ${Number(finalPrice).toLocaleString('en')}`
-    }
-    return `Rs ${Number(product?.price).toLocaleString('en')}`
-  }
+  const calculateRangeText = useMemo(() => {
+    if (!product?.discount) return `Rs ${Number(product?.price).toLocaleString('en')}`
+    const discountPrice = (product?.price * product?.discount) / 100
+    const finalPrice = product?.price - discountPrice
+    return `Rs ${Number(finalPrice).toLocaleString('en')}`
+  }, [product?.price, product?.discount])
 
   if (!product) return null
 
@@ -91,6 +89,8 @@ const ProductBox = ({ product, type }) => {
       </div>
     </div>
   )
-}
+});
+
+ProductBox.displayName = 'ProductBox';
 
 export default ProductBox

@@ -1,14 +1,16 @@
 'use client'
-import React from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import ProductBox from '@/components/common/products/ProductBox'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 
-const MostPopularSection = ({ products }) => {
-  const mostPopularProducts = products
-    ?.sort((a, b) => (b?.totalViews || 0) - (a?.totalViews || 0))
-    ?.slice(0, 8)
+const MostPopularSection = React.memo(({ products }) => {
+  const mostPopularProducts = useMemo(() => {
+    return products
+      ?.sort((a, b) => (b?.totalViews || 0) - (a?.totalViews || 0))
+      ?.slice(0, 8) || []
+  }, [products])
 
   if (!mostPopularProducts || mostPopularProducts.length === 0) {
     return null
@@ -59,6 +61,8 @@ const MostPopularSection = ({ products }) => {
       </div>
     </section>
   )
-}
+});
+
+MostPopularSection.displayName = 'MostPopularSection';
 
 export default MostPopularSection

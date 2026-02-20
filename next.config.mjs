@@ -6,18 +6,87 @@ const __dirname = path.dirname(__filename)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Disable logging in production for better performance
   logging: {
-    level: 'info',
+    level: process.env.NODE_ENV === 'production' ? 'error' : 'info',
     fetches: {
-      fullUrl: true,
+      fullUrl: process.env.NODE_ENV === 'production' ? false : true,
     },
   },
-  webpack: (config) => {
+  // Enable compression
+  compress: true,
+  // Optimize production builds
+  swcMinify: true,
+  // Enable React strict mode for better development experience
+  reactStrictMode: true,
+  // Optimize fonts
+  optimizeFonts: true,
+  // Power optimization settings
+  poweredByHeader: false,
+  // Experimental features for better performance
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      'react-icons',
+      'framer-motion',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-select',
+    ],
+  },
+  webpack: (config, { isServer }) => {
     // Ensure proper module resolution
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': path.resolve(__dirname, './src'),
     }
+
+    // Optimize bundle size
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+        runtimeChunk: 'single',
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Vendor chunk for large libraries
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /node_modules/,
+              priority: 20,
+            },
+            // Separate chunk for common libraries
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              priority: 10,
+              reuseExistingChunk: true,
+              enforce: true,
+            },
+            // Separate chunk for framer-motion
+            framerMotion: {
+              name: 'framer-motion',
+              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              chunks: 'all',
+              priority: 30,
+            },
+            // Separate chunk for swiper
+            swiper: {
+              name: 'swiper',
+              test: /[\\/]node_modules[\\/]swiper[\\/]/,
+              chunks: 'all',
+              priority: 30,
+            },
+          },
+        },
+      }
+    }
+
     return config
   },
   images: {

@@ -1,17 +1,19 @@
 'use client'
-import React from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import ProductBox from '@/components/common/products/ProductBox'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 
-const NewArrivalSection = ({ products }) => {
+const NewArrivalSection = React.memo(({ products }) => {
   // Ensure products is an array and filter for new products
-  const newArrivalProducts = Array.isArray(products)
-    ? products
-        .filter((product) => product?.new || product?.isNew)
-        .slice(0, 8)
-    : []
+  const newArrivalProducts = useMemo(() => {
+    return Array.isArray(products)
+      ? products
+          .filter((product) => product?.new || product?.isNew)
+          .slice(0, 8)
+      : []
+  }, [products])
 
   if (!newArrivalProducts || newArrivalProducts.length === 0) {
     return null
@@ -65,6 +67,8 @@ const NewArrivalSection = ({ products }) => {
       </div>
     </section>
   )
-}
+});
+
+NewArrivalSection.displayName = 'NewArrivalSection';
 
 export default NewArrivalSection

@@ -16,25 +16,35 @@ const MainLayout = ({ children }) => {
 
   // Initialize dynamic viewport height for mobile browsers
   useEffect(() => {
+    let ticking = false;
+    
     const setVH = () => {
-      const vh = window.innerHeight * 0.01
-      document.documentElement.style.setProperty('--vh', `${vh}px`)
+      if (ticking) return;
+      ticking = true;
+      
+      requestAnimationFrame(() => {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+        ticking = false;
+      });
     }
 
-    setVH()
-    window.addEventListener('resize', setVH)
-    window.addEventListener('orientationchange', setVH)
+    setVH();
+    
+    // Throttle resize events
+    window.addEventListener('resize', setVH, { passive: true });
+    window.addEventListener('orientationchange', setVH, { passive: true });
     
     // Also update on visual viewport changes (mobile browser address bar)
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', setVH)
+      window.visualViewport.addEventListener('resize', setVH, { passive: true });
     }
 
     return () => {
-      window.removeEventListener('resize', setVH)
-      window.removeEventListener('orientationchange', setVH)
+      window.removeEventListener('resize', setVH);
+      window.removeEventListener('orientationchange', setVH);
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', setVH)
+        window.visualViewport.removeEventListener('resize', setVH);
       }
     }
   }, [])

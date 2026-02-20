@@ -1,16 +1,43 @@
-import HeroSlider from "@/components/pages/home/hero-slider/HeroSlider";
+import dynamic from 'next/dynamic';
 import { getProducts } from "@/frontend/lib/productActions";
 import { getHappyCustomers } from "@/frontend/lib/happyCustomerAction";
 import { getAllCategories } from "@/frontend/lib/categoriesAction";
-import HappyCustomers from "@/components/pages/home/happy-customers/HappyCustomers";
-import CategoryBentoGrid from "@/components/pages/home/categories/CategoryBentoGrid";
-import MostPopularSection from "@/components/pages/home/products/MostPopularSection";
-import NewArrivalSection from "@/components/pages/home/products/NewArrivalSection";
-import BestSellerSection from "@/components/pages/home/products/BestSellerSection";
-import CustomizeSection from "@/components/pages/home/customize/CustomizeSection";
-import OptionsShowcase from "@/components/pages/home/options/OptionsShowcase";
 import { fetchOptions } from "@/frontend/lib/api";
 import { Metadata } from "next";
+
+// Lazy load above-the-fold component (HeroSlider loads immediately)
+import HeroSlider from "@/components/pages/home/hero-slider/HeroSlider";
+
+// Lazy load below-the-fold components for better initial page load
+const CategoryBentoGrid = dynamic(() => import("@/components/pages/home/categories/CategoryBentoGrid"), {
+  loading: () => <div className="py-12 md:py-16"><div className="animate-pulse bg-gray-200 h-96 rounded-lg" /></div>,
+  ssr: true,
+});
+
+const OptionsShowcase = dynamic(() => import("@/components/pages/home/options/OptionsShowcase"), {
+  loading: () => <div className="py-12 md:py-16"><div className="animate-pulse bg-gray-200 h-96 rounded-lg" /></div>,
+  ssr: true,
+});
+
+const NewArrivalSection = dynamic(() => import("@/components/pages/home/products/NewArrivalSection"), {
+  loading: () => <div className="py-12 md:py-16"><div className="animate-pulse bg-gray-200 h-96 rounded-lg" /></div>,
+  ssr: true,
+});
+
+const MostPopularSection = dynamic(() => import("@/components/pages/home/products/MostPopularSection"), {
+  loading: () => <div className="py-12 md:py-16"><div className="animate-pulse bg-gray-200 h-96 rounded-lg" /></div>,
+  ssr: true,
+});
+
+const BestSellerSection = dynamic(() => import("@/components/pages/home/products/BestSellerSection"), {
+  loading: () => <div className="py-12 md:py-16"><div className="animate-pulse bg-gray-200 h-96 rounded-lg" /></div>,
+  ssr: true,
+});
+
+const HappyCustomers = dynamic(() => import("@/components/pages/home/happy-customers/HappyCustomers"), {
+  loading: () => <div className="py-12 md:py-16"><div className="animate-pulse bg-gray-200 h-96 rounded-lg" /></div>,
+  ssr: true,
+});
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://casemandu.com.np";
 const siteName = process.env.NEXT_PUBLIC_SEO_TITLE || "Casemandu";

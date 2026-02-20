@@ -1,19 +1,19 @@
 import { Poppins } from 'next/font/google'
 import './globals.css'
-import './globals.css'
-import 'swiper/css'
-import 'swiper/css/pagination'
-import 'swiper/css/navigation'
-import 'swiper/css/effect-fade'
+// Swiper CSS will be loaded dynamically when needed
 import MainLayout from '@/components/layouts/MainLayout'
 import NextTopLoader from 'nextjs-toploader'
 import GoogleAnalytics from './GoogleAnalytics'
 import Whatsapp from '@/components/common/Whatsapp/Whatsapp'
 import ScrollToTop from '@/components/common/ScrollToTop/index.jsx'
 
+// Optimize font loading - only load necessary weights
 const poppins = Poppins({
   subsets: ['latin'],
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  weight: ['300', '400', '500', '600', '700'], // Reduced from 9 weights to 5
+  display: 'swap', // Better font loading performance
+  preload: true,
+  variable: '--font-poppins',
 })
 
 export const metadata = {

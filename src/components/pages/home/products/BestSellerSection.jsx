@@ -1,14 +1,16 @@
 'use client'
-import React from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import ProductBox from '@/components/common/products/ProductBox'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 
-const BestSellerSection = ({ products }) => {
-  const bestSellerProducts = products
-    ?.sort((a, b) => (b?.saleCount || 0) - (a?.saleCount || 0))
-    ?.slice(0, 8)
+const BestSellerSection = React.memo(({ products }) => {
+  const bestSellerProducts = useMemo(() => {
+    return products
+      ?.sort((a, b) => (b?.saleCount || 0) - (a?.saleCount || 0))
+      ?.slice(0, 8) || []
+  }, [products])
 
   if (!bestSellerProducts || bestSellerProducts.length === 0) {
     return null
@@ -55,6 +57,8 @@ const BestSellerSection = ({ products }) => {
       </div>
     </section>
   )
-}
+});
+
+BestSellerSection.displayName = 'BestSellerSection';
 
 export default BestSellerSection

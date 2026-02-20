@@ -1,11 +1,12 @@
 'use client'
 import { getAllPromocodes } from '@/frontend/lib/promocodeAction'
-import { getPromocodes } from '@/frontend/lib/promocodeAction'
 import { useEffect, useState } from 'react'
 import Countdown, { zeroPad } from 'react-countdown'
 import { GoPlus } from 'react-icons/go'
 import { Autoplay } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
+// Import Swiper CSS - Next.js will code-split this automatically
+import 'swiper/css'
 
 const Promocodes = ({ setIsPromocodes }) => {
   const [promocodes, setPromocodes] = useState([])

@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 
-const Footer = () => {
+const Footer = React.memo(() => {
   return (
     <div className='mx-auto py-20 px-4 sm:px-6 xl:px-20 2xl:px-16 bg-slate-100/60 w-full'>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-10 gap-x-3 justify-center'>
@@ -104,6 +104,8 @@ const Footer = () => {
       </div>
     </div>
   )
-}
+});
+
+Footer.displayName = 'Footer';
 
 export default Footer

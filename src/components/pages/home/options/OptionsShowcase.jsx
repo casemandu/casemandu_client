@@ -1,20 +1,20 @@
 'use client'
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 
-const OptionsShowcase = ({ options = [] }) => {
+const OptionsShowcase = React.memo(({ options = [] }) => {
   const containerRef = useRef(null)
   const cardRefs = useRef([])
   const [activeIndex, setActiveIndex] = useState(0)
   
-  if (!options || options.length === 0) return null
+  const displayOptions = useMemo(() => {
+    if (!options || options.length === 0) return []
+    return options.filter((option) => option?.displayOnHome !== false)
+  }, [options])
 
-  const displayOptions = options
-    .filter((option) => option?.displayOnHome !== false)
-
-  if (displayOptions.length === 0) return null
+  if (!displayOptions || displayOptions.length === 0) return null
 
   const buildOptionHref = (route = '') => {
     const sanitized = route.replace('/', '').trim()
@@ -267,6 +267,8 @@ const OptionsShowcase = ({ options = [] }) => {
       `}</style>
     </section>
   )
-}
+});
+
+OptionsShowcase.displayName = 'OptionsShowcase';
 
 export default OptionsShowcase

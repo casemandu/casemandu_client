@@ -1,7 +1,18 @@
-import moment from 'moment'
 import Link from 'next/link'
+import React from 'react'
 
-const OrderDetailsSection = ({ order }) => {
+// Lightweight date formatter - replaces moment.js
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+};
+
+const OrderDetailsSection = React.memo(({ order }) => {
   return (
     <>
       <h1 className='text-left my-5 text-3xl font-medium'>
@@ -13,7 +24,7 @@ const OrderDetailsSection = ({ order }) => {
           <p className='text-medium text-black mt-4'>
             Ordered Date:{' '}
             <span className='text-gray-500'>
-              {moment(order?.createdAt).format('LL')}
+              {formatDate(order?.createdAt)}
             </span>
           </p>
           <p className='text-medium text-black mt-4'>
@@ -144,6 +155,8 @@ const OrderDetailsSection = ({ order }) => {
       </div>
     </>
   )
-}
+});
+
+OrderDetailsSection.displayName = 'OrderDetailsSection';
 
 export default OrderDetailsSection
