@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Image from 'next/image'
+import { fetchVideoUrls } from '@/frontend/lib/api'
 
 const ProductDetails = ({ product, phones }) => {
   const [selectedBrand, setSelectedBrand] = useState('')
@@ -42,6 +43,79 @@ const ProductDetails = ({ product, phones }) => {
     variant: '',
     description: '',
   })
+
+  const [videos, setVideos] = useState([])
+  const [activeTab, setActiveTab] = useState('images') // 'images' or 'videos'
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0)
+  const [isPlayerReady, setIsPlayerReady] = useState(false)
+  const [playerError, setPlayerError] = useState(null)
+
+  useEffect(() => {
+    const loadVideos = async () => {
+      const videoData = await fetchVideoUrls()
+      setVideos(videoData)
+    }
+    loadVideos()
+  }, [])
+
+  // Reset player ready state when video changes
+  useEffect(() => {
+    setIsPlayerReady(false)
+    setPlayerError(null)
+  }, [selectedVideoIndex, activeTab])
+
+  // Helper function to extract YouTube video ID from URL
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null
+
+    // Handle YouTube Shorts format: youtube.com/shorts/VIDEO_ID
+    const shortsMatch = url.match(/youtube\.com\/shorts\/([^#&?\/]+)/)
+    if (shortsMatch) return shortsMatch[1]
+
+    // Handle standard YouTube formats
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+    const match = url.match(regExp)
+    return match && match[2].length === 11 ? match[2] : null
+  }
+
+  // Helper function to normalize YouTube URL
+  const normalizeYouTubeUrl = (url) => {
+    if (!url) return null
+
+    // Extract video ID first (this handles all YouTube URL formats including Shorts)
+    const videoId = getYouTubeVideoId(url)
+
+    if (videoId) {
+      // Convert all YouTube URLs (including Shorts) to standard watch format
+      // ReactPlayer handles watch URLs better than Shorts URLs
+      return `https://www.youtube.com/watch?v=${videoId}`
+    }
+
+    // If it's already a full URL but we couldn't extract ID, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url
+    }
+
+    // Try to construct URL from partial URL
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      const fullUrl = url.startsWith('//') ? `https:${url}` : `https://${url.replace(/^https?:\/\//, '')}`
+      // Try extracting video ID again from the constructed URL
+      const id = getYouTubeVideoId(fullUrl)
+      if (id) {
+        return `https://www.youtube.com/watch?v=${id}`
+      }
+      return fullUrl
+    }
+
+    return url
+  }
+
+  // Helper function to get YouTube thumbnail
+  const getYouTubeThumbnail = (url) => {
+    const videoId = getYouTubeVideoId(url)
+    if (!videoId) return null
+    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+  }
 
   // Helper function to validate and get cart item data
   const getCartItemData = () => {
@@ -135,8 +209,34 @@ const ProductDetails = ({ product, phones }) => {
   return (
     <div className='mt-6 lg:mt-10'>
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16'>
-        {/* Left Column - Product Image */}
+        {/* Left Column - Product Image/Video with Tabs */}
         <div className='lg:sticky lg:top-24 lg:self-start'>
+          {/* Tabs */}
+          <div className='flex gap-2 mb-4 border-b border-gray-200'>
+            <button
+              onClick={() => setActiveTab('images')}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'images'
+                ? 'text-gray-900 border-b-2 border-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
+            >
+              Image
+            </button>
+            {videos.length > 0 && (
+              <button
+                onClick={() => setActiveTab('videos')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'videos'
+                  ? 'text-gray-900 border-b-2 border-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Video
+              </button>
+            )}
+          </div>
+
+          {/* Images Tab Content */}
+          {activeTab === 'images' && (
           <div className='relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100'>
             <Image
               className='object-contain p-4'
@@ -153,6 +253,143 @@ const ProductDetails = ({ product, phones }) => {
               </div>
             )}
           </div>
+          )}
+
+          {/* Videos Tab Content */}
+          {activeTab === 'videos' && videos.length > 0 && (
+            <div className='space-y-4'>
+              {/* Main Video Player */}
+              <div className='relative w-full aspect-square bg-gray-900 rounded-2xl overflow-hidden border border-gray-100'>
+                {(() => {
+                  const currentVideo = videos[selectedVideoIndex]
+                  const videoUrl = currentVideo?.youtube_url || currentVideo
+
+                  if (!videoUrl) {
+                    return (
+                      <div className='flex items-center justify-center h-full text-white'>
+                        Invalid video URL
+                      </div>
+                    )
+                  }
+
+                  // Ensure videoUrl is a string and normalize it
+                  const videoUrlString = typeof videoUrl === 'string' ? videoUrl : String(videoUrl)
+                  const normalizedUrl = normalizeYouTubeUrl(videoUrlString)
+
+                  if (!normalizedUrl) {
+                    return (
+                      <div className='flex items-center justify-center h-full text-white'>
+                        Invalid video URL format
+                      </div>
+                    )
+                  }
+
+                  // Extract video ID for embed URL
+                  const videoId = getYouTubeVideoId(normalizedUrl)
+                  const embedUrl = videoId
+                    ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&fs=1&playsinline=1&iv_load_policy=3&cc_load_policy=0`
+                    : null
+
+                  if (!embedUrl) {
+                    return (
+                      <div className='flex items-center justify-center h-full text-white'>
+                        Invalid video URL format
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <div className='relative w-full h-full'>
+                      <iframe
+                        key={`video-${selectedVideoIndex}-${videoId}`}
+                        src={embedUrl}
+                        className='absolute top-0 left-0 w-full h-full'
+                        allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen'
+                        allowFullScreen
+                        title='YouTube video player'
+                        style={{
+                          border: 'none',
+                        }}
+                        onLoad={() => {
+                          setIsPlayerReady(true)
+                          setPlayerError(null)
+                        }}
+                        onError={() => {
+                          setPlayerError('Failed to load video')
+                          setIsPlayerReady(false)
+                        }}
+                      />
+                      {!isPlayerReady && !playerError && (
+                        <div className='absolute inset-0 flex items-center justify-center text-white z-10 bg-gray-900'>
+                          <div className='text-center'>
+                            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2'></div>
+                            <p>Loading video...</p>
+                          </div>
+                        </div>
+                      )}
+                      {playerError && (
+                        <div className='absolute inset-0 flex items-center justify-center text-white z-10 bg-gray-900/80'>
+                          <div className='text-center'>
+                            <p className='text-red-400 mb-2'>Error loading video</p>
+                            <p className='text-sm text-gray-400'>{playerError}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()}
+              </div>
+
+              {/* Video Thumbnails Grid */}
+              {videos.length > 1 && (
+                <div className='grid grid-cols-3 sm:grid-cols-4 gap-3'>
+                  {videos.map((video, index) => {
+                    const videoUrl = video?.youtube_url || video
+                    const thumbnail = getYouTubeThumbnail(videoUrl)
+                    const isSelected = index === selectedVideoIndex
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedVideoIndex(index)}
+                        className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${isSelected
+                          ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2'
+                          : 'border-gray-200 hover:border-gray-400'
+                          }`}
+                      >
+                        {thumbnail ? (
+                          <Image
+                            src={thumbnail}
+                            alt={`Video ${index + 1}`}
+                            fill
+                            className='object-cover'
+                            sizes='(max-width: 640px) 33vw, 25vw'
+                          />
+                        ) : (
+                          <div className='w-full h-full bg-gray-200 flex items-center justify-center'>
+                            <span className='text-gray-400 text-xs'>No thumbnail</span>
+                          </div>
+                        )}
+                        {isSelected && (
+                          <div className='absolute inset-0 bg-black/20 flex items-center justify-center'>
+                            <div className='w-12 h-12 rounded-full bg-white/90 flex items-center justify-center'>
+                              <svg
+                                className='w-6 h-6 text-gray-900 ml-1'
+                                fill='currentColor'
+                                viewBox='0 0 24 24'
+                              >
+                                <path d='M8 5v14l11-7z' />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Column - Product Details */}

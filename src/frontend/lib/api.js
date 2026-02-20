@@ -367,3 +367,27 @@ export const fetchOptions = async () => {
   }
 }
 
+export const fetchVideoUrls = async () => {
+  try {
+    const data = await fetchWithRetry('/api/youtube')
+    // Handle different response structures
+    if (data?.success && Array.isArray(data?.data)) {
+      return data.data
+    }
+    if (Array.isArray(data?.data)) {
+      return data.data
+    }
+    if (Array.isArray(data)) {
+      return data
+    }
+    // If single video object
+    if (data?.data?.youtube_url) {
+      return [data.data]
+    }
+    return []
+  } catch (error) {
+    console.error('Error fetching YouTube videos:', error)
+    return []
+  }
+}
+
