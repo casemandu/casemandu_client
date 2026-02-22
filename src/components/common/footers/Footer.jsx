@@ -17,7 +17,7 @@ const Footer = () => {
             />
           </Link>
           <p className='mt-3'>
-            © 2024 Casemandu. <br /> All Rights Reserved
+            © 2024 Casemandu. <br /> All Rights Reserved.
           </p>
         </div>
         <div className='flex flex-col gap-2'>
