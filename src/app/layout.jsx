@@ -24,10 +24,21 @@ export const metadata = {
   description: process.env.NEXT_PUBLIC_SEO_DESCRIPTION,
   keywords: [process.env.NEXT_PUBLIC_SEO_KEYWORDS],
   authors: [
-    { name: 'Achyut Chapagain', url: 'https://achyutchapagain.com.np' },
-    { name: 'Prashant Kafle', url: 'https://prashantkafle.com.np' },
+    { name: "Nischal Neupane", url: 'https://nischal-neupane.com.np' },
+    { name: 'Saurav Karki', url: 'https://saurav-karki.com.np' },
   ],
   metadataBase: new URL(`${process.env.NEXT_PUBLIC_APP_URL}`),
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
     title: {
       template: `%s | ${process.env.NEXT_PUBLIC_SEO_TITLE}`,
@@ -50,8 +61,8 @@ export const metadata = {
     site_name: `${process.env.NEXT_PUBLIC_SEO_TITLE}`,
     keywords: process.env.NEXT_PUBLIC_SEO_KEYWORDS,
     authors: [
-      { name: 'Achyut Chapagain', url: 'https://achyutchapagain.com.np' },
-      { name: 'Prashant Kafle', url: 'https://prashantkafle.com.np' },
+      { name: 'Nischal Neupane', url: 'https://nischal-neupane.com.np' },
+      { name: 'Saurav Karki', url: 'https://saurav-karki.com.np' },
     ],
     imageWidth: 1200,
     imageHeight: 630,
