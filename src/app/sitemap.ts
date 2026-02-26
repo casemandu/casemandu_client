@@ -21,7 +21,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let offers: HasSlugAndUpdatedAt[] = []
 
   try {
-    const productsData = await getOnlyProducts()
+    // Ask API for a large page size so we include (almost) all products in the sitemap.
+    // Adjust pageSize here if your catalog ever grows beyond this.
+    const productsData = await getOnlyProducts({
+      pageSize: 1000,
+      pageNumber: 1,
+    })
     if (Array.isArray(productsData)) {
       products = productsData as HasSlugAndUpdatedAt[]
     }
