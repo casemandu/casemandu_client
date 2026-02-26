@@ -21,17 +21,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let offers: HasSlugAndUpdatedAt[] = []
 
   try {
-    products = (await getOnlyProducts()) as HasSlugAndUpdatedAt[]
+    const productsData = await getOnlyProducts()
+    if (Array.isArray(productsData)) {
+      products = productsData as HasSlugAndUpdatedAt[]
+    }
   } catch {
     // best-effort; keep base URLs
   }
   try {
-    categories = (await getAllCategories()) as HasSlugAndUpdatedAt[]
+    const categoriesData = await getAllCategories()
+    if (Array.isArray(categoriesData)) {
+      categories = categoriesData as HasSlugAndUpdatedAt[]
+    }
   } catch {
     // best-effort; keep base URLs
   }
   try {
-    offers = (await getAllOffers()) as HasSlugAndUpdatedAt[]
+    const offersRaw = await getAllOffers()
+
+    // API may return either a plain array or an object with a `data` array
+    if (Array.isArray((offersRaw as any)?.data)) {
+      offers = (offersRaw as any).data as HasSlugAndUpdatedAt[]
+    } else if (Array.isArray(offersRaw)) {
+      offers = offersRaw as HasSlugAndUpdatedAt[]
+    }
   } catch {
     // best-effort; keep base URLs
   }
