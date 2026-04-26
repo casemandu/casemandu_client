@@ -1,9 +1,21 @@
 import ProductPageComponent from '@/components/pages/shop/ProductPageComponent'
 import { fetchOffers, fetchOptions, fetchCategories } from '@/frontend/lib/api'
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://casemandu.com.np'
+
 export const metadata = {
-  title: 'Offers - Casemandu',
-  description: 'Discover limited-time deals on Casemandu. Filter, search, and shop offer products effortlessly.',
+  title: 'Offers & Deals - Phone Cases & Accessories | Casemandu',
+  description: 'Discover limited-time deals on phone cases, mobile covers, and accessories in Nepal. Shop offers and save on premium Casemandu products.',
+  alternates: {
+    canonical: `${baseUrl}/offers`,
+  },
+  openGraph: {
+    title: 'Offers & Deals - Phone Cases & Accessories | Casemandu',
+    description: 'Discover limited-time deals on phone cases, mobile covers, and accessories in Nepal.',
+    url: `${baseUrl}/offers`,
+    siteName: 'Casemandu',
+    type: 'website',
+  },
 }
 
 const OffersPage = async ({ searchParams }) => {

@@ -13,16 +13,24 @@ import Link from 'next/link'
 
 export async function generateMetadata({ params }, parent) {
   const slug = params?.slug
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://casemandu.com.np'
 
   const product = await getProductBySlug(slug)
 
   const previousImages = (await parent).openGraph?.images || []
 
   return {
-    title: `${product?.title} - ${product?.category.title}`,
+    title: `${product?.title} - ${product?.category?.title} | Casemandu`,
     description: product?.shortDescription,
+    alternates: {
+      canonical: `${baseUrl}/products/${slug}`,
+    },
     openGraph: {
-      title: `${product?.title} - ${product?.category.title}`,
+      title: `${product?.title} - ${product?.category?.title} | Casemandu`,
+      description: product?.shortDescription,
+      url: `${baseUrl}/products/${slug}`,
+      siteName: 'Casemandu',
+      type: 'website',
       images: [product?.image, ...previousImages],
     },
   }

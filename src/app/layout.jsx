@@ -47,26 +47,17 @@ export const metadata = {
     description: process.env.NEXT_PUBLIC_SEO_DESCRIPTION,
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_SEO_IMAGE}`,
-        width: 800,
-        height: 600,
-      },
-      {
-        url: `${process.env.NEXT_PUBLIC_SEO_IMAGE}`, // Must be an absolute URL
-        width: 1800,
-        height: 1600,
+        url: `/images/logo/logo.png`,
+        width: 1200,
+        height: 630,
         alt: process.env.NEXT_PUBLIC_SEO_TITLE,
       },
     ],
-    site_name: `${process.env.NEXT_PUBLIC_SEO_TITLE}`,
-    keywords: process.env.NEXT_PUBLIC_SEO_KEYWORDS,
-    authors: [
-      { name: 'Nischal Neupane', url: 'https://nischal-neupane.com.np' },
-      { name: 'Saurav Karki', url: 'https://saurav-karki.com.np' },
-    ],
-    imageWidth: 1200,
-    imageHeight: 630,
+    siteName: `${process.env.NEXT_PUBLIC_SEO_TITLE}`,
     type: 'website',
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
   },
 }
 

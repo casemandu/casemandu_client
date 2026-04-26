@@ -1,6 +1,10 @@
 'use client'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import React, { useRef, useState } from 'react'
+import Image from 'next/image'
+import banner1 from '../../../../../public/images/banners/banner1.png'
+import banner2 from '../../../../../public/images/banners/BANNER2.png'
+import banner3 from '../../../../../public/images/banners/BANNER3.png'
+import banner4 from '../../../../../public/images/banners/BANNER4.png'
 
 import { EffectFlip } from 'swiper/modules'
 
@@ -10,26 +14,33 @@ const HeroSlider = () => {
   const sliderData = [
     {
       _id: 1,
-      thumbImage: '/images/banners/banner_1.png',
+      thumbImage: banner1,
       name: 'Skins',
       slug: 'skins',
     },
     {
       _id: 2,
-      thumbImage: '/images/banners/banner_2.png',
+      thumbImage: banner2,
       name: 'Laptop Sleeves',
       slug: 'laptop-sleeves',
     },
     {
       _id: 3,
-      thumbImage: '/images/banners/banner_3.png',
+      thumbImage: banner3,
       name: 'Mobile Covers',
       slug: 'mobile-covers',
     },
+    {
+      _id: 4,
+      thumbImage: banner4,
+      name: 'Airpods Cases',
+      slug: 'airpods-cases',
+    }
+    
   ]
 
   return (
-    <div className='w-full bg-transparent xl:min-h-[70vh] h-[15rem] sm:h-[30rem] md:h-[40rem] lg:h-111'>
+    <div className='w-full bg-transparent h-[13rem] sm:h-[22rem] md:h-[28rem] lg:h-[34rem] xl:h-[38rem]'>
       <Swiper
         slidesPerView={1}
         spaceBetween={0}
@@ -40,16 +51,21 @@ const HeroSlider = () => {
         }}
         navigation={true}
         modules={[Autoplay, Pagination, Navigation, EffectFlip]}
-        className='w-full relative z-10 h-full rounded shadow-lg overflow-hidden'
+        className='w-full h-full relative z-10 rounded shadow-lg overflow-hidden'
       >
         {sliderData?.map((slide) => (
-          <SwiperSlide key={slide._id}>
-            <div
-              className='h-full w-full bg-cover bg-center bg-no-repeat'
-              style={{
-                backgroundImage: `url(${slide.thumbImage})`,
-              }}
-            ></div>
+          <SwiperSlide key={slide._id} className='h-full'>
+            <div className='relative h-full w-full'>
+              <Image
+                src={slide.thumbImage}
+                alt={`${slide.name} banner`}
+                fill
+                sizes='100vw'
+                quality={90}
+                className='object-cover object-top'
+                priority={slide._id === 1}
+              />
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>

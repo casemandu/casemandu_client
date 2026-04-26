@@ -2,9 +2,21 @@ import ProductPageComponent from '@/components/pages/shop/ProductPageComponent'
 import { fetchProducts, fetchCategories, fetchOptions } from '@/frontend/lib/api'
 import React from 'react'
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://casemandu.com.np'
+
 export const metadata = {
-  title: 'Shop - All Products | Your Store Name',
-  description: 'Browse our complete collection of premium products with advanced filtering and sorting options.',
+  title: 'Shop - Phone Cases, Covers & Accessories | Casemandu',
+  description: 'Browse our full collection of premium phone cases, mobile covers, pop sockets, laptop sleeves, mousepads, and accessories in Nepal. Fast delivery across Nepal.',
+  alternates: {
+    canonical: `${baseUrl}/shop`,
+  },
+  openGraph: {
+    title: 'Shop - Phone Cases, Covers & Accessories | Casemandu',
+    description: 'Browse our full collection of premium phone cases, mobile covers, pop sockets, laptop sleeves, mousepads, and accessories in Nepal.',
+    url: `${baseUrl}/shop`,
+    siteName: 'Casemandu',
+    type: 'website',
+  },
 }
 
 const ShopPage = async ({ searchParams }) => {
