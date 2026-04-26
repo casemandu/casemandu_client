@@ -40,7 +40,7 @@ const HeroSlider = () => {
   ]
 
   return (
-    <div className='w-full bg-transparent h-[13rem] sm:h-[22rem] md:h-[28rem] lg:h-[34rem] xl:h-[38rem]'>
+    <div className='w-full aspect-video max-h-[85vh]'>
       <Swiper
         slidesPerView={1}
         spaceBetween={0}
@@ -62,7 +62,7 @@ const HeroSlider = () => {
                 fill
                 sizes='100vw'
                 quality={90}
-                className='object-cover object-top'
+                className='object-cover object-center'
                 priority={slide._id === 1}
               />
             </div>

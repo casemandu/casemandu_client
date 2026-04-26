@@ -18,16 +18,17 @@ export async function generateMetadata({ params }, parent) {
   const product = await getProductBySlug(slug)
 
   const previousImages = (await parent).openGraph?.images || []
+  const description = product?.shortDescription || product?.description || `Buy ${product?.title} at Casemandu. Premium quality ${product?.category?.title} with fast delivery across Nepal.`
 
   return {
     title: `${product?.title} - ${product?.category?.title} | Casemandu`,
-    description: product?.shortDescription,
+    description,
     alternates: {
       canonical: `${baseUrl}/products/${slug}`,
     },
     openGraph: {
       title: `${product?.title} - ${product?.category?.title} | Casemandu`,
-      description: product?.shortDescription,
+      description,
       url: `${baseUrl}/products/${slug}`,
       siteName: 'Casemandu',
       type: 'website',
@@ -41,7 +42,38 @@ export async function generateMetadata({ params }, parent) {
 const SingleProductPage = async ({ params }) => {
   const product = await getProductBySlug(params?.slug)
   const phones = await getPhones()
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://casemandu.com.np'
+
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product?.title,
+    description: product?.shortDescription || product?.description || `${product?.title} - ${product?.category?.title}`,
+    image: product?.image,
+    brand: {
+      '@type': 'Brand',
+      name: 'Casemandu',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: product?.price,
+      priceCurrency: 'NPR',
+      availability: 'https://schema.org/InStock',
+      url: `${baseUrl}/products/${params?.slug}`,
+      seller: {
+        '@type': 'Organization',
+        name: 'Casemandu',
+      },
+    },
+    category: product?.category?.title,
+  }
+
   return (
+    <>
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
     <div className='p-4 sm:p-8'>
       <div className='py-4 sm:px-6 xl:px-20 2xl:px-16 flex-grow'>
         <Breadcrumb>
@@ -74,6 +106,7 @@ const SingleProductPage = async ({ params }) => {
         <ProductDetails product={product} phones={phones} />
       </div>
     </div>
+    </>
   )
 }
 
