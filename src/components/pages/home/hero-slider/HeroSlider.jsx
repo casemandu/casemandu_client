@@ -1,10 +1,10 @@
 'use client'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import Image from 'next/image'
-import banner1 from '../../../../../public/images/banners/banner1.png'
-import banner2 from '../../../../../public/images/banners/BANNER2.png'
-import banner3 from '../../../../../public/images/banners/BANNER3.png'
-import banner4 from '../../../../../public/images/banners/BANNER4.png'
+import banner1 from '../../../../../public/images/banners/BAN1.png'
+import banner2 from '../../../../../public/images/banners/BAN2.png'
+import banner3 from '../../../../../public/images/banners/B3.png'
+import banner4 from '../../../../../public/images/banners/BAN4.png'
 
 import { EffectFlip } from 'swiper/modules'
 
@@ -40,7 +40,7 @@ const HeroSlider = () => {
   ]
 
   return (
-    <div className='w-full aspect-video max-h-[85vh]'>
+    <div className='w-full aspect-video'>
       <Swiper
         slidesPerView={1}
         spaceBetween={0}
