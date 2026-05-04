@@ -435,18 +435,58 @@ const getProductsByOption = async (optionId, pageSize = 15, pageNumber = 1, addi
   }
 }
 
-const getProductBySlug = async (slug) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/products/${slug}`,
-    { method: 'GET', cache: 'no-store' }
-  )
+// Sentinel returned when product genuinely doesn't exist (404).
+// The PAGE component must call notFound() on this — NOT generateMetadata,
+// because calling notFound() from metadata doesn't set HTTP 404 (causes Soft 404).
+export const PRODUCT_NOT_FOUND = /** @type {const} */ ('__PRODUCT_NOT_FOUND__')
 
-  if (response.status !== 200) {
-    notFound()
+const getProductBySlug = async (slug) => {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/products/${slug}`
+
+  const attemptFetch = async (timeoutMs) => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+    try {
+      const res = await fetch(apiUrl, {
+        method: 'GET',
+        next: { revalidate: 3600 },
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
+      return res
+    } catch (err) {
+      clearTimeout(timeoutId)
+      throw err
+    }
   }
 
-  const data = await response.json()
-  return data
+  try {
+    let response = await attemptFetch(12000)
+
+    if (response.status === 503) {
+      console.warn(`Product API 503 for slug: ${slug} — retrying in 5s`)
+      await new Promise(resolve => setTimeout(resolve, 5000))
+      response = await attemptFetch(15000)
+    }
+
+    if (response.status === 404) {
+      return PRODUCT_NOT_FOUND
+    }
+
+    if (!response.ok) {
+      console.error(`getProductBySlug: ${response.status} for slug: ${slug}`)
+      return null
+    }
+
+    return await response.json()
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      console.error(`getProductBySlug timed out for slug: ${slug}`)
+    } else {
+      console.error(`getProductBySlug error for slug: ${slug}`, err)
+    }
+    return null
+  }
 }
 
 const getOnlyProducts = async (filters = {}) => {

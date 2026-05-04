@@ -18,9 +18,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Image from 'next/image'
-import { fetchVideoUrls } from '@/frontend/lib/api'
 
-const ProductDetails = ({ product, phones }) => {
+const ProductDetails = ({ product, phones, videos = [] }) => {
   const [selectedBrand, setSelectedBrand] = useState('')
   const [selectedModel, setSelectedModel] = useState('')
 
@@ -44,19 +43,10 @@ const ProductDetails = ({ product, phones }) => {
     description: '',
   })
 
-  const [videos, setVideos] = useState([])
   const [activeTab, setActiveTab] = useState('images') // 'images' or 'videos'
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0)
   const [isPlayerReady, setIsPlayerReady] = useState(false)
   const [playerError, setPlayerError] = useState(null)
-
-  useEffect(() => {
-    const loadVideos = async () => {
-      const videoData = await fetchVideoUrls()
-      setVideos(videoData)
-    }
-    loadVideos()
-  }, [])
 
   // Reset player ready state when video changes
   useEffect(() => {

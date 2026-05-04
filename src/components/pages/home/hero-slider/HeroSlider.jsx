@@ -1,10 +1,6 @@
 'use client'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import Image from 'next/image'
-import banner1 from '../../../../../public/images/banners/BAN1.png'
-import banner2 from '../../../../../public/images/banners/BAN2.png'
-import banner3 from '../../../../../public/images/banners/B3.png'
-import banner4 from '../../../../../public/images/banners/BAN4.png'
 
 import { EffectFlip } from 'swiper/modules'
 
@@ -14,25 +10,25 @@ const HeroSlider = () => {
   const sliderData = [
     {
       _id: 1,
-      thumbImage: banner1,
+      thumbImage:"images/banners/BAN1.png",
       name: 'Skins',
       slug: 'skins',
     },
     {
       _id: 2,
-      thumbImage: banner2,
+      thumbImage:"images/banners/BAN2.png",
       name: 'Laptop Sleeves',
       slug: 'laptop-sleeves',
     },
     {
       _id: 3,
-      thumbImage: banner3,
+      thumbImage:"images/banners/B3.png",
       name: 'Mobile Covers',
       slug: 'mobile-covers',
     },
     {
       _id: 4,
-      thumbImage: banner4,
+      thumbImage:"images/banners/BAN4.png",
       name: 'Airpods Cases',
       slug: 'airpods-cases',
     }

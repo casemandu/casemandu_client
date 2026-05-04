@@ -6,10 +6,9 @@ import { PersistGate } from 'redux-persist/integration/react'
 const ReduxProvider = ({ children }) => {
   return (
     <Provider store={store}>
-      <PersistGate 
-        loading={null} 
-        persistor={persistor}
-      >
+      {/* loading must show real UI: loading={null} omits children from SSR/HTML, so
+          no-JS (crawlers, Brave block-scripts) sees a blank page and SEO suffers. */}
+      <PersistGate persistor={persistor} loading={children}>
         {children}
       </PersistGate>
     </Provider>
