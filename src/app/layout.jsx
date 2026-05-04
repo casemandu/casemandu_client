@@ -10,6 +10,7 @@ import NextTopLoader from 'nextjs-toploader'
 import GoogleAnalytics from './GoogleAnalytics'
 import Whatsapp from '@/components/common/Whatsapp/Whatsapp'
 import ScrollToTop from '@/components/common/ScrollToTop/index.jsx'
+import { getAllPromocodes } from '@/frontend/lib/promocodeAction'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -61,11 +62,13 @@ export const metadata = {
   },
 }
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const promocodes = await getAllPromocodes()
+
   return (
     <html lang='en'>
       <body className={`${poppins.className} flex flex-col min-h-screen max-w-[1920px] mx-auto`}>
-        <MainLayout>
+        <MainLayout promocodes={promocodes}>
           <NextTopLoader showSpinner={false} color='#FF0000' />
           {children}
           <Whatsapp/>

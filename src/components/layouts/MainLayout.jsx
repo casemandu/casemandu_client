@@ -1,5 +1,5 @@
 "use client";
-import React, { Suspense, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Toaster } from "sonner";
 import Header from "@/components/common/headers/Header";
 import MobileMenuDrawer from "@/components/common/headers/MobileMenuDrawer";
@@ -8,7 +8,7 @@ import ReduxProvider from "@/providers/ReduxProvider";
 import Promocodes from "@/components/common/promocodes/Promocodes";
 import SmoothScroll from "@/components/common/SmoothScroll";
 
-const MainLayout = ({ children }) => {
+const MainLayout = ({ children, promocodes = [] }) => {
   const [isOpenCart, setIsOpenCart] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -39,31 +39,29 @@ const MainLayout = ({ children }) => {
     }
   }, [])
   return (
-    <Suspense>
-      <ReduxProvider>
-        <SmoothScroll>
-          {isPromocodes && (
-            <Promocodes
-              isPromocodes={isPromocodes}
-              setIsPromocodes={setIsPromocodes}
-            />
-          )}
-          <Toaster
-            position="top-right"
-            richColors
-            closeButton={false}
-            duration={3000}
+    <ReduxProvider>
+      <SmoothScroll>
+        {isPromocodes && (
+          <Promocodes
+            setIsPromocodes={setIsPromocodes}
+            promocodes={promocodes}
           />
-          <Header setIsOpenCart={setIsOpenCart} setIsMenuOpen={setIsMenuOpen} />
-          {children}
-          <MobileMenuDrawer
-            isMenuOpen={isMenuOpen}
-            setIsMenuOpen={setIsMenuOpen}
-          />
-          <Footer />
-        </SmoothScroll>
-      </ReduxProvider>
-    </Suspense>
+        )}
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton={false}
+          duration={3000}
+        />
+        <Header setIsOpenCart={setIsOpenCart} setIsMenuOpen={setIsMenuOpen} />
+        {children}
+        <MobileMenuDrawer
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+        />
+        <Footer />
+      </SmoothScroll>
+    </ReduxProvider>
   );
 };
 

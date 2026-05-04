@@ -12,8 +12,8 @@ export default function robots(): MetadataRoute.Robots {
           '/api/',
           '/checkout/',
           '/order/',
-          '/_next/',
           '/admin/',
+          '/search',
         ],
       },
       {
@@ -24,6 +24,7 @@ export default function robots(): MetadataRoute.Robots {
           '/checkout/',
           '/order/',
           '/admin/',
+          '/search',
         ],
       },
     ],
