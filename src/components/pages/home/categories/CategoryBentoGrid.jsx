@@ -86,12 +86,10 @@ const CategoryBentoGrid = ({ categories = [] }) => {
                           {category.title}
                         </h3>
                         
-                        <Link href={`/shop?type=${category.slug}`} className='flex items-center gap-2 text-white/90 transition-colors pt-1'>
-                            <span className='text-sm'>
-                              Shop Now
-                            </span>
-                            <ArrowRight className='w-4 h-4 md:w-5 md:h-5 transform group-hover:translate-x-1 transition-transform ' />
-                        </Link>
+                        <span className='inline-flex items-center gap-2 text-white/90 transition-colors pt-1'>
+                          <span className='text-sm'>Shop Now</span>
+                          <ArrowRight className='w-4 h-4 md:w-5 md:h-5 transform group-hover:translate-x-1 transition-transform ' />
+                        </span>
                       </motion.div>
                     </div>
                   </div>

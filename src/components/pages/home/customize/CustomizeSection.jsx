@@ -50,15 +50,16 @@ const CustomizeSection = () => {
 
           
 
-            {/* CTA Button */}
-              <Link href='https://customize.casemandu.com.np/' target='_blank' rel='noopener noreferrer' className='w-full rounded-2xl'>
-                <Button
-                  size='lg'
-                  className='group bg-primary hover:bg-primary/90 text-white px-8 py-6 mt-8 text-base font-semibold  transition-all duration-300 rounded-xl'
-                >
-                  Customize Now
-                </Button>
+            {/* CTA: Link must be the DOM node (asChild) — avoid <a><button> */}
+            <Button
+              asChild
+              size='lg'
+              className='group bg-primary hover:bg-primary/90 text-white px-8 py-6 mt-8 text-base font-semibold transition-all duration-300 rounded-xl w-full sm:w-auto'
+            >
+              <Link href='https://customize.casemandu.com.np/' target='_blank' rel='noopener noreferrer'>
+                Customize Now
               </Link>
+            </Button>
           </div>
 
           {/* Right Side - Image */}
