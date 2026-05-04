@@ -1,42 +1,10 @@
 'use client'
-import { getAllPromocodes } from '@/frontend/lib/promocodeAction'
-import { getPromocodes } from '@/frontend/lib/promocodeAction'
-import { useEffect, useState } from 'react'
 import Countdown, { zeroPad } from 'react-countdown'
 import { GoPlus } from 'react-icons/go'
 import { Autoplay } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 
-const Promocodes = ({ setIsPromocodes }) => {
-  const [promocodes, setPromocodes] = useState([])
-
-  useEffect(() => {
-    let isMounted = true
-    
-    const fetchPromocodes = async () => {
-      try {
-        const promocodes = await getAllPromocodes()
-        if (isMounted && Array.isArray(promocodes)) {
-          setPromocodes(promocodes)
-        }
-      } catch (error) {
-        console.error('Failed to fetch promocodes:', error)
-        if (isMounted) {
-          setPromocodes([])
-        }
-      }
-    }
-    
-    // Add a small delay to prevent race conditions during initial load
-    const timer = setTimeout(() => {
-      fetchPromocodes()
-    }, 300)
-    
-    return () => {
-      isMounted = false
-      clearTimeout(timer)
-    }
-  }, [])
+const Promocodes = ({ setIsPromocodes, promocodes = [] }) => {
 
   const renderer = ({ days, hours, minutes, seconds, completed }) => {
     if (completed) {

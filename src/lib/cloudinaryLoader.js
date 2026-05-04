@@ -2,16 +2,21 @@
  * Cloudinary loader for Next.js Image component
  * This uses Cloudinary's transformation API to get optimized images directly
  * instead of letting Next.js fetch and process them, which is much faster.
- * 
- * For non-Cloudinary images, returns them as-is (they won't be optimized by Next.js
- * when using a custom loader, but this is necessary to use Cloudinary transformations).
+ *
+ * For non-Cloudinary URLs, Next.js still requires the returned URL to include `width`
+ * (see https://nextjs.org/docs/messages/next-image-missing-loader-width). Browsers
+ * ignore unknown query params on static assets.
  */
+function withLoaderWidthQuery(src, width, quality) {
+  if (width == null) return src
+  const q = quality ?? 75
+  const joiner = src.includes('?') ? '&' : '?'
+  return `${src}${joiner}w=${width}&q=${q}`
+}
+
 export default function cloudinaryLoader({ src, width, quality = 75 }) {
-  // If it's not a Cloudinary URL, return as-is
-  // Note: With a custom loader, Next.js won't optimize these images,
-  // but this is necessary to use Cloudinary's fast transformations
   if (!src.includes('res.cloudinary.com')) {
-    return src
+    return withLoaderWidthQuery(src, width, quality)
   }
 
   try {
@@ -25,8 +30,7 @@ export default function cloudinaryLoader({ src, width, quality = 75 }) {
     const uploadIndex = pathParts.indexOf('upload')
     
     if (uploadIndex === -1) {
-      // If it's not a standard Cloudinary URL, return as-is
-      return src
+      return withLoaderWidthQuery(src, width, quality)
     }
 
     // Get everything before 'upload' (cloud_name and resource_type)
@@ -70,8 +74,7 @@ export default function cloudinaryLoader({ src, width, quality = 75 }) {
     
     return `${url.protocol}//${url.hostname}/${beforeUpload.join('/')}/${transformedPath}`
   } catch (error) {
-    // If URL parsing fails, return original src
     console.warn('Cloudinary loader error:', error)
-    return src
+    return withLoaderWidthQuery(src, width, quality)
   }
 }

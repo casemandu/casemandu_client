@@ -3,10 +3,20 @@ import { getProductsByCategory } from '@/frontend/lib/productActions'
 import { getAllCategories } from '@/frontend/lib/categoriesAction'
 
 export async function generateMetadata({ params }, parent) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://casemandu.com.np'
+  const categoryName = params?.slug?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  const title = `${categoryName} - Phone Cases & Accessories | Casemandu`
   return {
-    title: `${params?.slug?.replace(/-/g, ' ').toUpperCase()}`,
+    title,
+    description: `Shop ${categoryName} phone cases, covers and accessories at Casemandu. Premium quality products with fast delivery across Nepal.`,
+    alternates: {
+      canonical: `${baseUrl}/shop/${params?.slug}`,
+    },
     openGraph: {
-      title: `${params?.slug?.replace(/-/g, ' ').toUpperCase()}`,
+      title,
+      url: `${baseUrl}/shop/${params?.slug}`,
+      siteName: 'Casemandu',
+      type: 'website',
     },
   }
 }

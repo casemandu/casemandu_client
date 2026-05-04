@@ -2,6 +2,10 @@ import ProductBox from '@/components/common/products/ProductBox'
 import { getProducts } from '@/frontend/lib/productActions'
 import React from 'react'
 
+export const metadata = {
+  robots: { index: false, follow: false },
+}
+
 const SearchPage = async ({ params, searchParams }) => {
   const { products } = await getProducts({ keyword: searchParams?.q || '', pageSize: 30, pageNumber: 1 })
   return (
