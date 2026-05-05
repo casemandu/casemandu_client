@@ -107,6 +107,143 @@ const ProductDetails = ({ product, phones, videos = [] }) => {
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
   }
 
+  const renderVideoContent = ({ showLoadingOverlay = true } = {}) => {
+    return (
+      <>
+        {/* Main Video Player */}
+        <div className='relative w-full aspect-square bg-gray-900 rounded-2xl overflow-hidden border border-gray-100'>
+          {(() => {
+            const currentVideo = videos[selectedVideoIndex]
+            const videoUrl = currentVideo?.youtube_url || currentVideo
+
+            if (!videoUrl) {
+              return (
+                <div className='flex items-center justify-center h-full text-white'>
+                  Invalid video URL
+                </div>
+              )
+            }
+
+            // Ensure videoUrl is a string and normalize it
+            const videoUrlString = typeof videoUrl === 'string' ? videoUrl : String(videoUrl)
+            const normalizedUrl = normalizeYouTubeUrl(videoUrlString)
+
+            if (!normalizedUrl) {
+              return (
+                <div className='flex items-center justify-center h-full text-white'>
+                  Invalid video URL format
+                </div>
+              )
+            }
+
+            // Extract video ID for embed URL
+            const videoId = getYouTubeVideoId(normalizedUrl)
+            const embedUrl = videoId
+              ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&fs=1&playsinline=1&iv_load_policy=3&cc_load_policy=0`
+              : null
+
+            if (!embedUrl) {
+              return (
+                <div className='flex items-center justify-center h-full text-white'>
+                  Invalid video URL format
+                </div>
+              )
+            }
+
+            return (
+              <div className='relative w-full h-full'>
+                <iframe
+                  key={`video-${selectedVideoIndex}-${videoId}`}
+                  src={embedUrl}
+                  className='absolute top-0 left-0 w-full h-full'
+                  allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen'
+                  allowFullScreen
+                  title='YouTube video player'
+                  style={{
+                    border: 'none',
+                  }}
+                  onLoad={() => {
+                    setIsPlayerReady(true)
+                    setPlayerError(null)
+                  }}
+                  onError={() => {
+                    setPlayerError('Failed to load video')
+                    setIsPlayerReady(false)
+                  }}
+                />
+                {showLoadingOverlay && !isPlayerReady && !playerError && (
+                  <div className='absolute inset-0 flex items-center justify-center text-white z-10 bg-gray-900'>
+                    <div className='text-center'>
+                      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2'></div>
+                      <p>Loading video...</p>
+                    </div>
+                  </div>
+                )}
+                {playerError && (
+                  <div className='absolute inset-0 flex items-center justify-center text-white z-10 bg-gray-900/80'>
+                    <div className='text-center'>
+                      <p className='text-red-400 mb-2'>Error loading video</p>
+                      <p className='text-sm text-gray-400'>{playerError}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
+        </div>
+
+        {/* Video Thumbnails Grid */}
+        {videos.length > 1 && (
+          <div className='grid grid-cols-3 sm:grid-cols-4 gap-3'>
+            {videos.map((video, index) => {
+              const videoUrl = video?.youtube_url || video
+              const thumbnail = getYouTubeThumbnail(videoUrl)
+              const isSelected = index === selectedVideoIndex
+
+              return (
+                <button
+                  key={index}
+                  onClick={() => setSelectedVideoIndex(index)}
+                  className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${isSelected
+                    ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2'
+                    : 'border-gray-200 hover:border-gray-400'
+                    }`}
+                >
+                  {thumbnail ? (
+                    <Image
+                      src={thumbnail}
+                      alt={`Video ${index + 1}`}
+                      fill
+                      className='object-cover'
+                      sizes='(max-width: 640px) 33vw, 25vw'
+                    />
+                  ) : (
+                    <div className='w-full h-full bg-gray-200 flex items-center justify-center'>
+                      <span className='text-gray-400 text-xs'>No thumbnail</span>
+                    </div>
+                  )}
+                  {isSelected && (
+                    <div className='absolute inset-0 bg-black/20 flex items-center justify-center'>
+                      <div className='w-12 h-12 rounded-full bg-white/90 flex items-center justify-center'>
+                        <svg
+                          className='w-6 h-6 text-gray-900 ml-1'
+                          fill='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path d='M8 5v14l11-7z' />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </>
+    )
+  }
+
   // Helper function to validate and get cart item data
   const getCartItemData = () => {
     if (product?.category?.isCase) {
@@ -201,185 +338,81 @@ const ProductDetails = ({ product, phones, videos = [] }) => {
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16'>
         {/* Left Column - Product Image/Video with Tabs */}
         <div className='lg:sticky lg:top-24 lg:self-start'>
-          {/* Tabs */}
-          <div className='flex gap-2 mb-4 border-b border-gray-200'>
-            <button
-              onClick={() => setActiveTab('images')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'images'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
-                }`}
-            >
-              Image
-            </button>
+          <div className='sm:hidden space-y-4'>
+            <div className='relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100'>
+              <Image
+                className='object-contain p-4'
+                src={product?.image}
+                alt={product?.name || 'Product Image'}
+                fill
+                priority
+                sizes='100vw'
+              />
+              {product?.discount > 0 && (
+                <div className='absolute top-4 left-4 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg'>
+                  -{product.discount}% OFF
+                </div>
+              )}
+            </div>
             {videos.length > 0 && (
+              <div className='space-y-4'>
+                {renderVideoContent({ showLoadingOverlay: false })}
+              </div>
+            )}
+          </div>
+
+          <div className='hidden sm:block'>
+            {/* Tabs */}
+            <div className='flex gap-2 mb-4 border-b border-gray-200'>
               <button
-                onClick={() => setActiveTab('videos')}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'videos'
+                onClick={() => setActiveTab('images')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'images'
                   ? 'text-gray-900 border-b-2 border-gray-900'
                   : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
-                Video
+                Image
               </button>
-            )}
-          </div>
+              {videos.length > 0 && (
+                <button
+                  onClick={() => setActiveTab('videos')}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'videos'
+                    ? 'text-gray-900 border-b-2 border-gray-900'
+                    : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                  Video
+                </button>
+              )}
+            </div>
 
-          {/* Images Tab Content */}
-          {activeTab === 'images' && (
-          <div className='relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100'>
-            <Image
-              className='object-contain p-4'
-              src={product?.image}
-              alt={product?.name || 'Product Image'}
-              fill
-              priority
-              sizes='(max-width: 768px) 100vw, 50vw'
-            />
-            {/* Discount Badge */}
-            {product?.discount > 0 && (
-              <div className='absolute top-4 left-4 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg'>
-                -{product.discount}% OFF
-              </div>
-            )}
-          </div>
-          )}
-
-          {/* Videos Tab Content */}
-          {activeTab === 'videos' && videos.length > 0 && (
-            <div className='space-y-4'>
-              {/* Main Video Player */}
-              <div className='relative w-full aspect-square bg-gray-900 rounded-2xl overflow-hidden border border-gray-100'>
-                {(() => {
-                  const currentVideo = videos[selectedVideoIndex]
-                  const videoUrl = currentVideo?.youtube_url || currentVideo
-
-                  if (!videoUrl) {
-                    return (
-                      <div className='flex items-center justify-center h-full text-white'>
-                        Invalid video URL
-                      </div>
-                    )
-                  }
-
-                  // Ensure videoUrl is a string and normalize it
-                  const videoUrlString = typeof videoUrl === 'string' ? videoUrl : String(videoUrl)
-                  const normalizedUrl = normalizeYouTubeUrl(videoUrlString)
-
-                  if (!normalizedUrl) {
-                    return (
-                      <div className='flex items-center justify-center h-full text-white'>
-                        Invalid video URL format
-                      </div>
-                    )
-                  }
-
-                  // Extract video ID for embed URL
-                  const videoId = getYouTubeVideoId(normalizedUrl)
-                  const embedUrl = videoId
-                    ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&fs=1&playsinline=1&iv_load_policy=3&cc_load_policy=0`
-                    : null
-
-                  if (!embedUrl) {
-                    return (
-                      <div className='flex items-center justify-center h-full text-white'>
-                        Invalid video URL format
-                      </div>
-                    )
-                  }
-
-                  return (
-                    <div className='relative w-full h-full'>
-                      <iframe
-                        key={`video-${selectedVideoIndex}-${videoId}`}
-                        src={embedUrl}
-                        className='absolute top-0 left-0 w-full h-full'
-                        allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen'
-                        allowFullScreen
-                        title='YouTube video player'
-                        style={{
-                          border: 'none',
-                        }}
-                        onLoad={() => {
-                          setIsPlayerReady(true)
-                          setPlayerError(null)
-                        }}
-                        onError={() => {
-                          setPlayerError('Failed to load video')
-                          setIsPlayerReady(false)
-                        }}
-                      />
-                      {!isPlayerReady && !playerError && (
-                        <div className='absolute inset-0 flex items-center justify-center text-white z-10 bg-gray-900'>
-                          <div className='text-center'>
-                            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2'></div>
-                            <p>Loading video...</p>
-                          </div>
-                        </div>
-                      )}
-                      {playerError && (
-                        <div className='absolute inset-0 flex items-center justify-center text-white z-10 bg-gray-900/80'>
-                          <div className='text-center'>
-                            <p className='text-red-400 mb-2'>Error loading video</p>
-                            <p className='text-sm text-gray-400'>{playerError}</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })()}
-              </div>
-
-              {/* Video Thumbnails Grid */}
-              {videos.length > 1 && (
-                <div className='grid grid-cols-3 sm:grid-cols-4 gap-3'>
-                  {videos.map((video, index) => {
-                    const videoUrl = video?.youtube_url || video
-                    const thumbnail = getYouTubeThumbnail(videoUrl)
-                    const isSelected = index === selectedVideoIndex
-
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedVideoIndex(index)}
-                        className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${isSelected
-                          ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2'
-                          : 'border-gray-200 hover:border-gray-400'
-                          }`}
-                      >
-                        {thumbnail ? (
-                          <Image
-                            src={thumbnail}
-                            alt={`Video ${index + 1}`}
-                            fill
-                            className='object-cover'
-                            sizes='(max-width: 640px) 33vw, 25vw'
-                          />
-                        ) : (
-                          <div className='w-full h-full bg-gray-200 flex items-center justify-center'>
-                            <span className='text-gray-400 text-xs'>No thumbnail</span>
-                          </div>
-                        )}
-                        {isSelected && (
-                          <div className='absolute inset-0 bg-black/20 flex items-center justify-center'>
-                            <div className='w-12 h-12 rounded-full bg-white/90 flex items-center justify-center'>
-                              <svg
-                                className='w-6 h-6 text-gray-900 ml-1'
-                                fill='currentColor'
-                                viewBox='0 0 24 24'
-                              >
-                                <path d='M8 5v14l11-7z' />
-                              </svg>
-                            </div>
-                          </div>
-                        )}
-                      </button>
-                    )
-                  })}
+            {/* Images Tab Content */}
+            {activeTab === 'images' && (
+            <div className='relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100'>
+              <Image
+                className='object-contain p-4'
+                src={product?.image}
+                alt={product?.name || 'Product Image'}
+                fill
+                priority
+                sizes='(max-width: 768px) 100vw, 50vw'
+              />
+              {/* Discount Badge */}
+              {product?.discount > 0 && (
+                <div className='absolute top-4 left-4 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg'>
+                  -{product.discount}% OFF
                 </div>
               )}
             </div>
-          )}
+            )}
+
+            {/* Videos Tab Content */}
+            {activeTab === 'videos' && videos.length > 0 && (
+              <div className='space-y-4'>
+                {renderVideoContent({ showLoadingOverlay: true })}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Column - Product Details */}
@@ -433,7 +466,7 @@ const ProductDetails = ({ product, phones, videos = [] }) => {
           )}
 
           {/* Features */}
-          {product?.features && product?.features?.length > 0 && (
+          {/* {product?.features && product?.features?.length > 0 && (
             <div className='bg-gray-50 rounded-xl p-4'>
               <h3 className='text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2'>
                 <Check className='h-4 w-4 text-green-500' />
@@ -448,8 +481,7 @@ const ProductDetails = ({ product, phones, videos = [] }) => {
                 ))}
               </ul>
             </div>
-          )}
-
+          )} */}
           {/* Brand & Model Selection */}
           {!product?.productType?.extraField && product?.category?.isCase && (
             <div className='space-y-4 p-5 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl border border-gray-200'>
