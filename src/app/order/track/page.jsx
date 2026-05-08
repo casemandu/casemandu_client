@@ -2,12 +2,12 @@
 import { trackMyOrder } from '@/frontend/lib/orderActionClient'
 import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { BsCart2, BsPhone } from 'react-icons/bs'
 import { GrDeliver } from 'react-icons/gr'
 import { ImSpinner2 } from 'react-icons/im'
 
-const OrderTractPage = () => {
+const OrderTrackForm = () => {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -108,5 +108,11 @@ const OrderTractPage = () => {
     </div>
   )
 }
+
+const OrderTractPage = () => (
+  <Suspense>
+    <OrderTrackForm />
+  </Suspense>
+)
 
 export default OrderTractPage
