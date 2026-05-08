@@ -6,7 +6,7 @@ const getBanners = async (keyword) => {
       `${process.env.NEXT_PUBLIC_API_URL}/api/banners`,
       {
         method: 'GET',
-        cache: 'no-store',
+        next: { revalidate: 3600 },
       }
     )
     if (response.status !== 200) {

@@ -6,7 +6,7 @@ const getAllOffers = async (keyword) => {
       `${process.env.NEXT_PUBLIC_API_URL}/api/offers`,
       {
         method: 'GET',
-        cache: 'no-store',
+        next: { revalidate: 3600 },
       }
     )
     if (response.status !== 200) {
@@ -25,7 +25,7 @@ const getOfferBySlug = async (slug) => {
       `${process.env.NEXT_PUBLIC_API_URL}/api/offers/${slug}`,
       {
         method: 'GET',
-        cache: 'no-store',
+        next: { revalidate: 3600 },
       }
     )
     if (response.status !== 200) {

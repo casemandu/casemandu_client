@@ -87,7 +87,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!category?.slug) continue
 
     urls.push({
-      url: `${baseUrl}/shop?type=${category.slug}`,
+      url: `${baseUrl}/shop/${category.slug}`,
       lastModified: category.updatedAt ?? undefined,
       changeFrequency: 'monthly',
     })

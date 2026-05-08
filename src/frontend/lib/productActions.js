@@ -79,7 +79,7 @@ const getProducts = async (filters = {}) => {
     try {
       response = await fetch(apiUrl, {
         method: 'GET',
-        cache: 'no-store',
+        next: { revalidate: 3600 },
         signal: controller.signal,
       })
       clearTimeout(timeoutId)
@@ -107,7 +107,7 @@ const getProducts = async (filters = {}) => {
         try {
           const retryResponse = await fetch(apiUrl, {
             method: 'GET',
-            cache: 'no-store',
+            next: { revalidate: 3600 },
             signal: controller.signal,
           })
           
@@ -212,7 +212,7 @@ const getProductsByCategory = async (categoryId, pageSize = 15, pageNumber = 1, 
     try {
       response = await fetch(apiUrl, {
         method: 'GET',
-        cache: 'no-store',
+        next: { revalidate: 3600 },
         signal: controller.signal,
       })
       clearTimeout(timeoutId)
@@ -235,7 +235,7 @@ const getProductsByCategory = async (categoryId, pageSize = 15, pageNumber = 1, 
         try {
           const retryResponse = await fetch(apiUrl, {
             method: 'GET',
-            cache: 'no-store',
+            next: { revalidate: 3600 },
             signal: controller.signal,
           })
           
@@ -341,7 +341,7 @@ const getProductsByOption = async (optionId, pageSize = 15, pageNumber = 1, addi
     try {
       response = await fetch(apiUrl, {
         method: 'GET',
-        cache: 'no-store',
+        next: { revalidate: 3600 },
         signal: controller.signal,
       })
       clearTimeout(timeoutId)
@@ -364,7 +364,7 @@ const getProductsByOption = async (optionId, pageSize = 15, pageNumber = 1, addi
         try {
           const retryResponse = await fetch(apiUrl, {
             method: 'GET',
-            cache: 'no-store',
+            next: { revalidate: 3600 },
             signal: controller.signal,
           })
           
@@ -516,7 +516,7 @@ const getOnlyProducts = async (filters = {}) => {
       `${process.env.NEXT_PUBLIC_API_URL}/api/products?${queryString}`,
       {
         method: 'GET',
-        cache: 'no-store',
+        next: { revalidate: 3600 },
       }
     )
     if (!response.ok) {

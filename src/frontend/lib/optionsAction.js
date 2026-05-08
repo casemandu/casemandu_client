@@ -16,7 +16,7 @@ const getAllOptions = async () => {
     try {
       response = await fetch(apiUrl, {
         method: "GET",
-        cache: "no-store",
+        next: { revalidate: 3600 },
         signal: controller.signal,
       })
       clearTimeout(timeoutId)
@@ -49,7 +49,7 @@ const getAllOptions = async () => {
         try {
           const retryResponse = await fetch(apiUrl, {
             method: "GET",
-            cache: "no-store",
+            next: { revalidate: 3600 },
             signal: controller.signal,
           })
           

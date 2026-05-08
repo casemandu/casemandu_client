@@ -6,7 +6,7 @@ const getPhones = async () => {
       `${process.env.NEXT_PUBLIC_API_URL}/api/phones`,
       {
         method: 'GET',
-        cache: 'no-store',
+        next: { revalidate: 3600 },
       }
     )
     if (response.status !== 200) {
