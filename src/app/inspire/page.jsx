@@ -1,5 +1,11 @@
 import React from "react";
 import { Inspirecomponent } from "./Inspirecomponent";
+
+export const metadata = {
+  title: 'Get Inspired | Casemandu',
+  description: 'Browse design inspiration for your custom phone case at Casemandu.',
+  robots: { index: false, follow: false },
+};
 import {
   Breadcrumb,
   BreadcrumbItem,

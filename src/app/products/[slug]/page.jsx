@@ -18,12 +18,9 @@ export async function generateMetadata({ params }, parent) {
 
   const product = await getProductBySlug(slug)
 
-  // Product deleted from DB — return noindex so the page component can call notFound()
-  // Don't call notFound() here: metadata runs before HTTP status is set, causing Soft 404
+  // Product deleted from DB — trigger a proper 404 response
   if (product === PRODUCT_NOT_FOUND || !product) {
-    return {
-      robots: { index: false, follow: false },
-    }
+    notFound()
   }
 
   const previousImages = (await parent).openGraph?.images || []

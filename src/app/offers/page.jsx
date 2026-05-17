@@ -1,5 +1,7 @@
 import ProductPageComponent from '@/components/pages/shop/ProductPageComponent'
-import { fetchOffers, fetchOptions, fetchCategories } from '@/frontend/lib/api'
+import { fetchOffers } from '@/frontend/lib/api'
+import { getAllOptions } from '@/frontend/lib/optionsAction'
+import { getAllCategories } from '@/frontend/lib/categoriesAction'
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://casemandu.com.np'
 
@@ -20,8 +22,8 @@ export const metadata = {
 
 const OffersPage = async ({ searchParams }) => {
   const [options, categories] = await Promise.all([
-    fetchOptions(),
-    fetchCategories(),
+    getAllOptions(),
+    getAllCategories(),
   ])
 
   const optionParam = searchParams?.option || null

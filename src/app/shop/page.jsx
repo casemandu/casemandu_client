@@ -1,5 +1,7 @@
 import ProductPageComponent from '@/components/pages/shop/ProductPageComponent'
-import { fetchProducts, fetchCategories, fetchOptions } from '@/frontend/lib/api'
+import { getAllOptions } from '@/frontend/lib/optionsAction'
+import { getAllCategories } from '@/frontend/lib/categoriesAction'
+import { getProducts } from '@/frontend/lib/productActions'
 import React from 'react'
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://casemandu.com.np'
@@ -20,10 +22,10 @@ export const metadata = {
 }
 
 const ShopPage = async ({ searchParams }) => {
-  // Fetch options and categories
+  // Fetch options and categories using cached server-side functions (native fetch + revalidate)
   const [options, categories] = await Promise.all([
-    fetchOptions(),
-    fetchCategories(),
+    getAllOptions(),
+    getAllCategories(),
   ])
   
   const optionParam = searchParams?.option || null
@@ -62,13 +64,13 @@ const ShopPage = async ({ searchParams }) => {
     }
   }
 
-  // Fetch products based on filters
+  // Fetch products based on filters (cached native fetch, revalidates every 5 min)
   let products
   try {
-    products = await fetchProducts({
-      page,
-      limit: 30,
-      categories: categoryId,
+    products = await getProducts({
+      pageNumber: page,
+      pageSize: 30,
+      categoryId: categoryId,
       options: optionId,
     })
     

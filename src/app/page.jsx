@@ -9,7 +9,7 @@ import NewArrivalSection from "@/components/pages/home/products/NewArrivalSectio
 import BestSellerSection from "@/components/pages/home/products/BestSellerSection";
 import CustomizeSection from "@/components/pages/home/customize/CustomizeSection";
 import OptionsShowcase from "@/components/pages/home/options/OptionsShowcase";
-import { fetchOptions } from "@/frontend/lib/api";
+import { getAllOptions } from "@/frontend/lib/optionsAction";
 import { Metadata } from "next";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://casemandu.com.np";
@@ -91,7 +91,7 @@ export default async function Home() {
   const { products } = await getProducts({ pageSize: 30, pageNumber: 1 });
   const happyCustomers = await getHappyCustomers();
   const categories = await getAllCategories();
-  const options = await fetchOptions();
+  const options = await getAllOptions();
 
   // Structured Data for SEO
   const organizationSchema = {
